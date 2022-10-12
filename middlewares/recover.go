@@ -4,9 +4,9 @@ import (
 	"bytes"
 
 	"github.com/gin-gonic/gin"
-	rainbow_errors "github.com/nft-rainbow/rainbow-api/rainbow-errors"
-	"github.com/nft-rainbow/rainbow-api/utils/ginutils"
 	"github.com/sirupsen/logrus"
+	rainbow_errors "github.com/wangdayong228/cns-backend/errors"
+	"github.com/wangdayong228/cns-backend/utils/ginutils"
 )
 
 func Recovery() gin.HandlerFunc {

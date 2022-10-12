@@ -8,9 +8,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/wangdayong228/cns-backend/logger"
-	// "github.com/wangdayong228/cns-backend/middlewares"
-	// "github.com/wangdayong228/cns-backend/models"
-	// "github.com/wangdayong228/cns-backend/routers"
+	"github.com/wangdayong228/cns-backend/middlewares"
+	"github.com/wangdayong228/cns-backend/models"
+	"github.com/wangdayong228/cns-backend/routers"
 	// "github.com/wangdayong228/cns-backend/routers/assets"
 	// "github.com/wangdayong228/cns-backend/services"
 )
@@ -39,11 +39,7 @@ func initGin() *gin.Engine {
 func init() {
 	initConfig()
 	logger.Init()
-	services.InitCfxMainService()
-	services.InitCfxTestService()
-	middlewares.InitOpenJwtMiddleware()
-	middlewares.InitDashboardJwtMiddleware()
-	middlewares.InitAdminJwtMiddleware()
+	// middlewares.InitOpenJwtMiddleware()
 	middlewares.InitRateLimitMiddleware()
 	logrus.Info("init done")
 }
@@ -61,21 +57,9 @@ func init() {
 func main() {
 	models.ConnectDB()
 
-	// go services.StartTXService()
-	// go services.SyncNFTMintTaskStatus()
-	// go services.SyncNFTMintBatchTaskStatus()
-	// go services.SyncNFTTransferTaskStatus()
-	// go services.SyncNFTTransferBatchTaskStatus()
-	// go services.SyncNFTBurnTaskStatus()
-	// go services.SyncContractDeployTaskStatus()
-	// go services.RefreshLogOutput()
-	// go services.StartWatcherService()
-
 	app := initGin()
 	app.Use(middlewares.RateLimitMiddleware)
 	routers.SetupRoutes(app)
-	admin.SetupRoutes(app)
-	assets.SetupRoutes(app)
 
 	port := viper.GetString("port")
 	if port == "" {
