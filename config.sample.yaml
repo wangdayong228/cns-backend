@@ -1,0 +1,11 @@
+environment: development
+port: 8080
+mysql:
+  host: localhost
+  port: 3306
+  user: root
+  password: new-password
+  db: cns_backend_test
+log:
+  level: trace # trace,debug,info,warn,error,fatal,panic
+  folder: /Users/dayong/myspace/mywork/conflux-pay/.log

@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
-	rainbow_errors "github.com/wangdayong228/cns-backend/errors"
+	rainbow_errors "github.com/wangdayong228/cns-backend/cns_errors"
 )
 
 func DataResponse(data interface{}) interface{} {

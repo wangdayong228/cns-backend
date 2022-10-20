@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	rainbow_errors "github.com/wangdayong228/cns-backend/errors"
+	rainbow_errors "github.com/wangdayong228/cns-backend/cns_errors"
 	"github.com/wangdayong228/cns-backend/utils/ginutils"
 )
 

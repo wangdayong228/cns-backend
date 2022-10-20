@@ -34,6 +34,7 @@ func ConnectDB() {
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
 	var err error
 	dbConfig := viper.GetStringMapString("mysql")
+	fmt.Println(dbConfig)
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbConfig["user"], dbConfig["password"], dbConfig["host"], dbConfig["port"], dbConfig["db"])
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -41,8 +42,8 @@ func ConnectDB() {
 	}
 
 	// Migrate the schema
-	// db.AutoMigrate(&User{})
-
+	db.AutoMigrate(&CnsOrder{})
+	db.AutoMigrate(&Commit{})
 }
 
 func GetDB() *gorm.DB {

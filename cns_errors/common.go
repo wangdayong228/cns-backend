@@ -1,4 +1,4 @@
-package rainbow_errors
+package cns_errors
 
 import "net/http"
 
