@@ -34,10 +34,8 @@ func GetCommit(c *gin.Context) {
 }
 
 func QueryCommits(c *gin.Context) {
-	commitReq := &services.QueryCommitsReq{
-		Limit: 10,
-	}
-	if err := c.ShouldBindJSON(&commitReq); err != nil {
+	commitReq := &services.QueryCommitsReq{}
+	if err := c.ShouldBindQuery(&commitReq); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
 	}

@@ -69,11 +69,10 @@ func MakeOrder(req *OrderReq, commitHash string) (*models.CnsOrder, error) {
 	if err != nil {
 		return nil, err
 	}
-	commit.OrderState = enums.ORDER_STATE_SUCCESS
+	commit.OrderState = enums.ORDER_STATE_MADE
 	models.GetDB().Save(commit)
 
 	return cnsOrder, nil
-
 }
 
 func GetOrder(commitHash string) (*models.CnsOrder, error) {

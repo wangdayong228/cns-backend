@@ -31,7 +31,7 @@ func FindCommit(commitHash string) (*Commit, error) {
 	return c, GetDB().Where(c).First(c).Error
 }
 
-func FindCommits(condition *Commit, skip int, limit int) ([]*Commit, error) {
+func FindCommits(condition *Commit, offset int, limit int) ([]*Commit, error) {
 	commits := []*Commit{}
-	return commits, GetDB().Where(condition).Find(&commits).Offset(skip).Limit(limit).Error
+	return commits, GetDB().Where(condition).Find(&commits).Offset(offset).Limit(limit).Error
 }

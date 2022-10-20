@@ -18,11 +18,29 @@ var (
 type DataGenerator struct {
 }
 
-func (*DataGenerator) MakeCommitment(name string, owner common.Address, duration *big.Int, secret [32]byte, resolver common.Address, data [][]byte, reverseRecord bool, fuses uint32, wrapperExpiry uint64) (string, error) {
-	v, err := web3RegisterController.Pack("makeCommitment", name, owner, duration, secret, resolver, data, reverseRecord, fuses, wrapperExpiry)
+type CommitArgs struct {
+	Name          string
+	Label         [32]byte
+	Owner         common.Address
+	Duration      *big.Int
+	Secret        [32]byte
+	Resolver      common.Address
+	Data          [][]byte
+	ReverseRecord bool
+	Fuses         uint32
+	WrapperExpiry uint
+}
+
+func (*DataGenerator) MakeCommitment(args *CommitArgs) (string, error) {
+	v, err := web3RegisterController.Pack("makeCommitment", args.Name, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
 	return utils.Bytes2Hex(v), err
 }
 
-func (*DataGenerator) GenCommit(label [32]byte, owner common.Address, duration *big.Int, secret [32]byte, resolver common.Address, data [][]byte, reverseRecord bool, fuses uint32, wrapperExpiry uint64) ([]byte, error) {
-	return genCommitABI.Pack("genCommitHash", label, owner, duration, secret, resolver, data, reverseRecord, fuses, wrapperExpiry)
+func (*DataGenerator) GenCommit(args *CommitArgs) ([]byte, error) {
+	return genCommitABI.Pack("genCommitHash", args.Label, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
+}
+
+func (*DataGenerator) Register(args *CommitArgs) (string, error) {
+	v, err := web3RegisterController.Pack("registerWithFiat", args.Name, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
+	return utils.Bytes2Hex(v), err
 }

@@ -44,8 +44,9 @@ func ConnectDB() {
 	// Migrate the schema
 	db.AutoMigrate(&CnsOrder{})
 	db.AutoMigrate(&Commit{})
+	db.AutoMigrate(&Transaction{})
 }
 
 func GetDB() *gorm.DB {
-	return db
+	return db.Debug()
 }

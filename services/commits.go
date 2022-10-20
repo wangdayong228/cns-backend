@@ -21,9 +21,8 @@ var (
 )
 
 type QueryCommitsReq struct {
-	Skip       int     `json:"skip,omitempty"`
-	Limit      int     `json:"limit,omitempty"`
-	OrderState *string `json:"is_order_made,omitempty"`
+	Pagination
+	OrderState *string `json:"order_state,omitempty"`
 	Owner      string  `json:"owner,omitempty"`
 }
 
@@ -56,7 +55,8 @@ func QueryCommits(req *QueryCommitsReq) ([]*models.Commit, error) {
 		cond.OrderState = *orderState
 	}
 	cond.Owner = req.Owner
-	return models.FindCommits(cond, req.Skip, req.Limit)
+	offset, limit := req.Pagination.CalcOffsetLimit()
+	return models.FindCommits(cond, offset, limit)
 }
 
 func GetCommit(commitHash string) (*models.Commit, error) {
@@ -65,8 +65,7 @@ func GetCommit(commitHash string) (*models.Commit, error) {
 
 // ==================== utils ======================
 
-func genCommitData(c *models.CommitArgs) ([]byte, error) {
-
+func newCommitArgsForContract(c *models.CommitArgs) (*contracts.CommitArgs, error) {
 	label := crypto.Keccak256Hash([]byte(c.Name))
 
 	owner, err := cfxaddress.New(c.Owner)
@@ -95,7 +94,26 @@ func genCommitData(c *models.CommitArgs) ([]byte, error) {
 		data = append(data, bytes)
 	}
 
-	return dataGen.GenCommit(label, owner.MustGetCommonAddress(), duration, *secretBytes, resolver.MustGetCommonAddress(), data, c.ReverseRecord, uint32(c.Fuses), uint64(c.WrapperExpiry))
+	return &contracts.CommitArgs{
+		Name:          c.Name,
+		Label:         label,
+		Owner:         owner.MustGetCommonAddress(),
+		Duration:      duration,
+		Secret:        *secretBytes,
+		Resolver:      resolver.MustGetCommonAddress(),
+		Data:          data,
+		ReverseRecord: c.ReverseRecord,
+		Fuses:         uint32(c.Fuses),
+		WrapperExpiry: c.WrapperExpiry,
+	}, nil
+}
+
+func genCommitData(c *models.CommitArgs) ([]byte, error) {
+	arg, err := newCommitArgsForContract(c)
+	if err != nil {
+		return nil, err
+	}
+	return dataGen.GenCommit(arg)
 }
 
 func calcCommitHash(c *models.CommitArgs) (common.Hash, error) {

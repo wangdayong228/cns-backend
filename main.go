@@ -12,6 +12,7 @@ import (
 	"github.com/wangdayong228/cns-backend/middlewares"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/routers"
+	"github.com/wangdayong228/cns-backend/services"
 	// "gorm.io/gorm/logger"
 	// "github.com/wangdayong228/cns-backend/routers/assets"
 	// "github.com/wangdayong228/cns-backend/services"
@@ -47,6 +48,8 @@ func main() {
 	config.Init()
 	logger.Init()
 	models.ConnectDB()
+
+	services.StartServices()
 
 	app := initGin()
 	// app.Use(middlewares.RateLimitMiddleware)
