@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"github.com/wangdayong228/cns-backend/models"
+	"github.com/wangdayong228/cns-backend/models/enums"
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
-	"github.com/wangdayong228/conflux-pay/models/enums"
+	penums "github.com/wangdayong228/conflux-pay/models/enums"
 	pservice "github.com/wangdayong228/conflux-pay/services"
 )
 
@@ -34,11 +35,11 @@ func init() {
 }
 
 func MakeOrder(req *OrderReq, commitHash string) (*models.CnsOrder, error) {
-	// verify
+	// TODO: verify
 	// 1. check commitHash is valid by contract
 
-	// call payservice.makeorder -> return url
-	provider, ok := enums.ParseTradeProviderByName(req.TradeProvider)
+	// 2. call payservice.makeorder and save order
+	provider, ok := penums.ParseTradeProviderByName(req.TradeProvider)
 	if !ok {
 		return nil, fmt.Errorf("invalid provider: %v", req.TradeProvider)
 	}
@@ -47,7 +48,7 @@ func MakeOrder(req *OrderReq, commitHash string) (*models.CnsOrder, error) {
 	var err error
 
 	switch *provider {
-	case enums.TRADE_PROVIDER_WECHAT:
+	case penums.TRADE_PROVIDER_WECHAT:
 		wecahtOrdReq := *confluxpay.NewServicesMakeWechatOrderReq(int32(req.Amount), *req.Description, int32(req.TimeExpire), int32(req.TradeType))
 		payOrder, _, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).WecahtOrdReq(wecahtOrdReq).Execute()
 		if err != nil {
@@ -62,6 +63,14 @@ func MakeOrder(req *OrderReq, commitHash string) (*models.CnsOrder, error) {
 		return nil, err
 	}
 	models.GetDB().Save(cnsOrder)
+
+	// 3. set commit order state
+	commit, err := models.FindCommit(commitHash)
+	if err != nil {
+		return nil, err
+	}
+	commit.OrderState = enums.ORDER_STATE_SUCCESS
+	models.GetDB().Save(commit)
 
 	return cnsOrder, nil
 
@@ -82,8 +91,8 @@ func GetOrder(commitHash string) (*models.CnsOrder, error) {
 		return nil, err
 	}
 
-	if enums.TradeState(*resp.TradeState).IsStable() {
-		o.TradeState = enums.TradeState(*resp.TradeState)
+	if penums.TradeState(*resp.TradeState).IsStable() {
+		o.TradeState = penums.TradeState(*resp.TradeState)
 		models.GetDB().Save(o)
 	}
 	return o, nil

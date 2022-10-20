@@ -1,5 +1,7 @@
 package models
 
+import "github.com/wangdayong228/cns-backend/models/enums"
+
 type Commit struct {
 	BaseModel
 	CommitCore
@@ -7,8 +9,8 @@ type Commit struct {
 
 type CommitCore struct {
 	CommitArgs
-	CommitHash  string `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
-	IsOrderMade bool   `json:"is_order_made"`
+	CommitHash string           `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
+	OrderState enums.OrderState `json:"is_order_made"`
 }
 
 type CommitArgs struct {

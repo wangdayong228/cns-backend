@@ -9,3 +9,5 @@ mysql:
 log:
   level: trace # trace,debug,info,warn,error,fatal,panic
   folder: /Users/dayong/myspace/mywork/conflux-pay/.log
+rpc:
+  url: https://test.confluxrpc.com

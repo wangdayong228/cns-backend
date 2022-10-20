@@ -10,19 +10,21 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/wangdayong228/cns-backend/contracts"
 	"github.com/wangdayong228/cns-backend/models"
+	"github.com/wangdayong228/cns-backend/models/enums"
 	"github.com/wangdayong228/cns-backend/utils"
 )
 
 var (
-	ErrCommitHashWrong = errors.New("commit hash is wrong")
-	dataGen            = contracts.DataGenerator{}
+	ErrCommitHashWrong       = errors.New("commit hash is wrong")
+	ErrOrderStateUnrecognize = errors.New("unrecognized order state")
+	dataGen                  = contracts.DataGenerator{}
 )
 
 type QueryCommitsReq struct {
-	Skip        int    `json:"skip,omitempty"`
-	Limit       int    `json:"limit,omitempty"`
-	IsOrderMade *bool  `json:"is_order_made,omitempty"`
-	Owner       string `json:"owner,omitempty"`
+	Skip       int     `json:"skip,omitempty"`
+	Limit      int     `json:"limit,omitempty"`
+	OrderState *string `json:"is_order_made,omitempty"`
+	Owner      string  `json:"owner,omitempty"`
 }
 
 func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
@@ -39,14 +41,19 @@ func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
 
 	// 2. save
 	commit := &models.Commit{CommitCore: *c}
+	commit.OrderState = enums.ORDER_STATE_INIT
 	models.GetDB().Save(commit)
 	return commit, nil
 }
 
 func QueryCommits(req *QueryCommitsReq) ([]*models.Commit, error) {
 	cond := &models.Commit{}
-	if req.IsOrderMade != nil {
-		cond.IsOrderMade = *req.IsOrderMade
+	if req.OrderState != nil {
+		orderState, ok := enums.ParseOrderState(*req.OrderState)
+		if !ok {
+			return nil, ErrOrderStateUnrecognize
+		}
+		cond.OrderState = *orderState
 	}
 	cond.Owner = req.Owner
 	return models.FindCommits(cond, req.Skip, req.Limit)

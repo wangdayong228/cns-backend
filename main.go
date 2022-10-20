@@ -58,7 +58,7 @@ func main() {
 	}
 
 	address := fmt.Sprintf("0.0.0.0:%s", port)
-	logrus.Info("Rainbow-API Start Listening and serving HTTP on ", address)
+	logrus.Info("Cns-Backend Start Listening and serving HTTP on ", address)
 	err := app.Run(address)
 	if err != nil {
 		log.Panic(err)
