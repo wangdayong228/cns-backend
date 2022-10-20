@@ -6,6 +6,7 @@ import (
 
 	"github.com/Conflux-Chain/go-conflux-sdk/types/cfxaddress"
 	sdkutils "github.com/Conflux-Chain/go-conflux-sdk/utils"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/wangdayong228/cns-backend/contracts"
 	"github.com/wangdayong228/cns-backend/models"
@@ -14,6 +15,7 @@ import (
 
 var (
 	ErrCommitHashWrong = errors.New("commit hash is wrong")
+	dataGen            = contracts.DataGenerator{}
 )
 
 type QueryCommitsReq struct {
@@ -24,14 +26,13 @@ type QueryCommitsReq struct {
 }
 
 func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
-	encodedData, err := genCommitData(&c.CommitArgs)
+	// 1. verify commitHash is clac right
+	targeHash, err := calcCommitHash(&c.CommitArgs)
 	if err != nil {
 		return nil, err
 	}
-	// 1. verify commitHash is clac right
-	targeHash := crypto.Keccak256Hash(encodedData)
-	sourceHash, _ := utils.StrToHash(c.CommitHash)
 
+	sourceHash, _ := utils.StrToHash(c.CommitHash)
 	if *sourceHash != targeHash {
 		return nil, ErrCommitHashWrong
 	}
@@ -42,7 +43,25 @@ func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
 	return commit, nil
 }
 
+func QueryCommits(req *QueryCommitsReq) ([]*models.Commit, error) {
+	cond := &models.Commit{}
+	if req.IsOrderMade != nil {
+		cond.IsOrderMade = *req.IsOrderMade
+	}
+	cond.Owner = req.Owner
+	return models.FindCommits(cond, req.Skip, req.Limit)
+}
+
+func GetCommit(commitHash string) (*models.Commit, error) {
+	return models.FindCommit(commitHash)
+}
+
+// ==================== utils ======================
+
 func genCommitData(c *models.CommitArgs) ([]byte, error) {
+
+	label := crypto.Keccak256Hash([]byte(c.Name))
+
 	owner, err := cfxaddress.New(c.Owner)
 	if err != nil {
 		return nil, err
@@ -69,18 +88,13 @@ func genCommitData(c *models.CommitArgs) ([]byte, error) {
 		data = append(data, bytes)
 	}
 
-	return contracts.GenMakeCommitDataInBytes(c.Name, owner.MustGetCommonAddress(), duration, *secretBytes, resolver.MustGetCommonAddress(), data, c.ReverseRecord, uint32(c.Fuses), uint64(c.WrapperExpiry))
+	return dataGen.GenCommit(label, owner.MustGetCommonAddress(), duration, *secretBytes, resolver.MustGetCommonAddress(), data, c.ReverseRecord, uint32(c.Fuses), uint64(c.WrapperExpiry))
 }
 
-func QueryCommits(req *QueryCommitsReq) ([]*models.Commit, error) {
-	cond := &models.Commit{}
-	if req.IsOrderMade != nil {
-		cond.IsOrderMade = *req.IsOrderMade
+func calcCommitHash(c *models.CommitArgs) (common.Hash, error) {
+	data, err := genCommitData(c)
+	if err != nil {
+		return common.Hash{}, err
 	}
-	cond.Owner = req.Owner
-	return models.FindCommits(cond, req.Skip, req.Limit)
-}
-
-func GetCommit(commitHash string) (*models.Commit, error) {
-	return models.FindCommit(commitHash)
+	return crypto.Keccak256Hash(data), nil
 }
