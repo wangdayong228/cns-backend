@@ -37,7 +37,7 @@ func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {
 	return orders, GetDB().Where("id > ?", startID).Where(&o).Find(&orders).Error
 }
 
-// TX_STATE_SEND_FAILED_RETRY_UPPER_GAS TxState = iota - 4 // -3
+// TX_STATE_SEND_FAILED_RETRY_UPPER_GAS TxState = iota - 4 // -4
 // TX_STATE_SEND_FAILED_RETRY                              // -3
 // TX_STATE_EXECUTE_FAILED                                 // -2
 // TX_STATE_SEND_FAILED                                    // -1
@@ -46,7 +46,7 @@ func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {
 // TX_STATE_PENDING                                        // 2
 // TX_STATE_EXECUTED                                       // 3
 // TX_STATE_CONFIRMED
-func FindNeedSyncStateOrders() ([]*CnsOrder, error) {
+func FindNeedSyncStateOrders(count int) ([]*CnsOrder, error) {
 	o := CnsOrder{}
 	o.RegisterTxID = 0
 
@@ -57,7 +57,8 @@ func FindNeedSyncStateOrders() ([]*CnsOrder, error) {
 		Or("register_tx_state = ?", TX_STATE_SEND_FAILED_RETRY_UPPER_GAS).
 		Or("register_tx_state = ?", TX_STATE_POPULATED).
 		Or("register_tx_state = ?", TX_STATE_PENDING).
-		Find(&orders).Error
+		Find(&orders).
+		Limit(count).Error
 }
 
 func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*CnsOrder, error) {

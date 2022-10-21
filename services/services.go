@@ -6,6 +6,7 @@ import (
 	sdk "github.com/Conflux-Chain/go-conflux-sdk"
 	"github.com/spf13/viper"
 	tx_engine "github.com/wangdayong228/cns-backend/cfx-tx-engine"
+	"github.com/wangdayong228/cns-backend/config"
 )
 
 var (
@@ -36,16 +37,17 @@ func (p Pagination) CalcOffsetLimit() (offset int, limit int) {
 }
 
 func Init() {
-	rpcClient = sdk.MustNewClient(viper.GetString("rpc.url"), sdk.ClientOption{
+	rpc := config.RpcVal
+	rpcClient = sdk.MustNewClient(viper.GetString(rpc.Url), sdk.ClientOption{
 		RetryCount: 3,
 		Logger:     os.Stdout,
 	})
 	// TODO: add admin private key
-	privKeys := viper.GetStringSlice("rpc.private_keys")
-	chainID := viper.GetInt("rpc.chainID")
-	rpcClient.SetAccountManager(tx_engine.NewPrivatekeyAccountManager(privKeys, uint32(chainID)))
+	rpcClient.SetAccountManager(tx_engine.NewPrivatekeyAccountManager(rpc.PrivateKeys, uint32(rpc.ChainID)))
 }
 
 func StartServices() {
-	go StartTXService()
+	go TxService()
+	go RegisterService()
+	go SyncRegisterStateService()
 }

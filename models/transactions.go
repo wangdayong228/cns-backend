@@ -128,3 +128,9 @@ func FindTransactionByID(id uint) (*Transaction, error) {
 	err := GetDB().First(&tx, id).Error
 	return &tx, err
 }
+
+func FindTransactionByIDs(ids []uint) ([]*Transaction, error) {
+	txs := []*Transaction{}
+	err := GetDB().Where(ids).Find(txs).Error
+	return txs, err
+}

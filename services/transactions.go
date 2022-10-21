@@ -5,12 +5,12 @@ import (
 	"time"
 
 	tx_engine "github.com/wangdayong228/cns-backend/cfx-tx-engine"
+	"github.com/wangdayong228/cns-backend/config"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
 
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type txProcesser func()
@@ -40,7 +40,7 @@ func FindTransactionByID(id uint) (*models.Transaction, error) {
 	return models.FindTransactionByID(id)
 }
 
-func StartTXService() {
+func TxService() {
 	logrus.Info("start task for sending transactions")
 	sendInterval := time.Second * 5
 
@@ -62,9 +62,8 @@ func MustGetTxProcesser(chainType enums.ChainType, chainId enums.ChainID) txProc
 		"chain ID":   chainId,
 	})
 	if chainType == enums.CHAIN_TYPE_CFX {
-		// client := MustGetCfxChainEnv(chainId).Client
-		retryLimit := viper.GetInt("tx_engine.retryLimit")
-		sendCountOnce := viper.GetInt("tx_engine.sendCountOnce")
+		retryLimit := config.TxEngineVal.RetryLimit
+		sendCountOnce := config.TxEngineVal.SendCountOnce
 		logEntry.WithField("retryLimit", retryLimit).WithField("sendCountOnce", sendCountOnce).Info("created tx processer")
 		return func() {
 			txs, err := FindTxNeedToBeProcessed(chainType, chainId, sendCountOnce)

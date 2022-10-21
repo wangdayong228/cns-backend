@@ -9,7 +9,7 @@ import (
 	"github.com/Conflux-Chain/go-conflux-sdk/types/cfxaddress"
 	"github.com/Conflux-Chain/go-conflux-sdk/utils"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/spf13/viper"
+	"github.com/wangdayong228/cns-backend/config"
 	"github.com/wangdayong228/cns-backend/models"
 )
 
@@ -200,7 +200,7 @@ func (t *TxWithResult) improveGasPrice(delta *big.Int) {
 }
 
 func needRetry(t *TxWithResult) (_needRetry bool, needUpperGas bool) {
-	if t.TrySendCnt > viper.GetInt("tx_engine.retryLimit") {
+	if t.TrySendCnt > config.TxEngineVal.RetryLimit {
 		return false, false
 	}
 
