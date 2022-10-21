@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -53,6 +54,7 @@ func main() {
 
 	app := initGin()
 	// app.Use(middlewares.RateLimitMiddleware)
+	app.Use(cors.Default())
 	routers.SetupRoutes(app)
 
 	port := viper.GetString("port")

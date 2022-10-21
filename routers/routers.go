@@ -13,9 +13,18 @@ func SetupRoutes(router *gin.Engine) {
 
 	api := router.Group("v0")
 	{
+		commit := api.Group("commits")
+		{
+			commit.POST("/", controllers.MakeCommits)
+			commit.GET("/:commit_hash", controllers.GetCommit)
+			commit.GET("/", controllers.QueryCommits)
+		}
+
 		order := api.Group("orders")
-		order.POST("/:commit_hash", controllers.MakeOrder)
-		order.GET("/:commit_hash", controllers.GetOrder)
+		{
+			order.POST("/:commit_hash", controllers.MakeOrder)
+			order.GET("/:commit_hash", controllers.GetOrder)
+		}
 	}
 }
 

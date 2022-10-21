@@ -21,7 +21,11 @@ func MakeCommits(c *gin.Context) {
 		return
 	}
 	commits, err := services.MakeCommits(&commitCore)
-	ginutils.RenderResp(c, commits.CommitHash, err)
+	if err != nil {
+		ginutils.RenderRespError(c, err)
+		return
+	}
+	ginutils.RenderRespOK(c, services.MakeCommitResp{commits.CommitHash})
 }
 
 func GetCommit(c *gin.Context) {
@@ -41,5 +45,11 @@ func QueryCommits(c *gin.Context) {
 	}
 
 	commits, err := services.QueryCommits(commitReq)
-	ginutils.RenderResp(c, commits, err)
+
+	resp := []models.CommitCore{}
+	for _, v := range commits {
+		resp = append(resp, v.CommitCore)
+	}
+
+	ginutils.RenderResp(c, resp, err)
 }

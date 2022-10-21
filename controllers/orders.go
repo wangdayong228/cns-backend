@@ -21,9 +21,14 @@ func MakeOrder(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)
+		return
 	}
 
 	order, err := services.MakeOrder(&req, commitHash)
+	if err != nil {
+		ginutils.RenderRespError(c, err)
+		return
+	}
 
 	resp := services.OrderResp{
 		CommitHash: commitHash,
@@ -36,14 +41,19 @@ func MakeOrder(c *gin.Context) {
 		},
 	}
 
-	ginutils.RenderResp(c, resp, err)
+	ginutils.RenderRespOK(c, resp)
 }
 
 func GetOrder(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)
+		return
 	}
 	order, err := services.GetOrder(commitHash)
-	ginutils.RenderResp(c, order.CnsOrderCore, err)
+	if err != nil {
+		ginutils.RenderRespError(c, err)
+		return
+	}
+	ginutils.RenderRespOK(c, order.CnsOrderCore)
 }

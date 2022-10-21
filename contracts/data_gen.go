@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	genCommitABIStr           = `{"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"duration","type":"uint256"},{"internalType":"bytes32","name":"secret","type":"bytes32"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"bytes[]","name":"data","type":"bytes[]"},{"internalType":"bool","name":"reverseRecord","type":"bool"},{"internalType":"uint32","name":"fuses","type":"uint32"},{"internalType":"uint64","name":"wrapperExpiry","type":"uint64"}],"name":"genCommit","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"}`
+	genCommitABIStr           = `[{"inputs":[{"internalType":"bytes32","name":"name","type":"bytes32"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"duration","type":"uint256"},{"internalType":"bytes32","name":"secret","type":"bytes32"},{"internalType":"address","name":"resolver","type":"address"},{"internalType":"bytes[]","name":"data","type":"bytes[]"},{"internalType":"bool","name":"reverseRecord","type":"bool"},{"internalType":"uint32","name":"fuses","type":"uint32"},{"internalType":"uint64","name":"wrapperExpiry","type":"uint64"}],"name":"genCommit","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"}]`
 	genCommitABI, _           = abi.JSON(strings.NewReader(genCommitABIStr))
 	web3RegisterController, _ = abi.JSON(strings.NewReader(Web3RegisterControllerABI))
 )
@@ -28,7 +28,7 @@ type CommitArgs struct {
 	Data          [][]byte
 	ReverseRecord bool
 	Fuses         uint32
-	WrapperExpiry uint
+	WrapperExpiry uint64
 }
 
 func (*DataGenerator) MakeCommitment(args *CommitArgs) (string, error) {
@@ -37,7 +37,7 @@ func (*DataGenerator) MakeCommitment(args *CommitArgs) (string, error) {
 }
 
 func (*DataGenerator) GenCommit(args *CommitArgs) ([]byte, error) {
-	return genCommitABI.Pack("genCommitHash", args.Label, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
+	return genCommitABI.Pack("genCommit", args.Label, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
 }
 
 func (*DataGenerator) Register(args *CommitArgs) (string, error) {

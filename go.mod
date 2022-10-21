@@ -6,6 +6,7 @@ require (
 	github.com/Conflux-Chain/go-conflux-sdk v1.4.3
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/fatih/color v1.13.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/openweb3/go-sdk-common v0.0.0-20220720074746-a7134e1d372c
 	github.com/pkg/errors v0.9.1

@@ -16,6 +16,9 @@ func Bytes2Hex(data []byte) string {
 }
 
 func StrToHash(input string) (*common.Hash, error) {
+	if input[:2] == "0x" {
+		input = input[2:]
+	}
 	val, err := hex.DecodeString(input)
 	if err != nil {
 		return nil, err

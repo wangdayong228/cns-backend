@@ -8,6 +8,7 @@ import (
 	sdkutils "github.com/Conflux-Chain/go-conflux-sdk/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/sirupsen/logrus"
 	"github.com/wangdayong228/cns-backend/contracts"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
@@ -15,10 +16,14 @@ import (
 )
 
 var (
-	ErrCommitHashWrong       = errors.New("commit hash is wrong")
+	ErrCommitHashNotMatch    = errors.New("commit hash not match args")
 	ErrOrderStateUnrecognize = errors.New("unrecognized order state")
 	dataGen                  = contracts.DataGenerator{}
 )
+
+type MakeCommitResp struct {
+	CommitHash string `json:"commit_hash"`
+}
 
 type QueryCommitsReq struct {
 	Pagination
@@ -35,7 +40,8 @@ func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
 
 	sourceHash, _ := utils.StrToHash(c.CommitHash)
 	if *sourceHash != targeHash {
-		return nil, ErrCommitHashWrong
+		logrus.WithField("correct", targeHash).Info("commit hash not match")
+		return nil, ErrCommitHashNotMatch
 	}
 
 	// 2. save
@@ -104,7 +110,7 @@ func newCommitArgsForContract(c *models.CommitArgs) (*contracts.CommitArgs, erro
 		Data:          data,
 		ReverseRecord: c.ReverseRecord,
 		Fuses:         uint32(c.Fuses),
-		WrapperExpiry: c.WrapperExpiry,
+		WrapperExpiry: uint64(c.WrapperExpiry),
 	}, nil
 }
 

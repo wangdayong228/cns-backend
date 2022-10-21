@@ -9,8 +9,8 @@ type Commit struct {
 
 type CommitCore struct {
 	CommitArgs
-	CommitHash string           `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
-	OrderState enums.OrderState `json:"is_order_made"`
+	CommitHash string           `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash" binding:"required"`
+	OrderState enums.OrderState `json:"order_state,omitempty"`
 }
 
 type CommitArgs struct {

@@ -8,7 +8,7 @@ mysql:
   db: cns_backend_test
 log:
   level: trace # trace,debug,info,warn,error,fatal,panic
-  folder: /Users/dayong/myspace/mywork/conflux-pay/.log
+  folder: /Users/dayong/myspace/mywork/cns-backend/.log
 rpc:
   url: https://test.confluxrpc.com
   chainID: 1

@@ -9,6 +9,7 @@ import (
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
 	penums "github.com/wangdayong228/conflux-pay/models/enums"
 	pservice "github.com/wangdayong228/conflux-pay/services"
+	"gorm.io/gorm"
 )
 
 type OrderReq struct {
@@ -62,15 +63,28 @@ func MakeOrder(req *OrderReq, commitHash string) (*models.CnsOrder, error) {
 	if err != nil {
 		return nil, err
 	}
-	models.GetDB().Save(cnsOrder)
 
-	// 3. set commit order state
-	commit, err := models.FindCommit(commitHash)
+	err = models.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(cnsOrder).Error; err != nil {
+			return err
+		}
+
+		// 3. set commit order state
+		commit, err := models.FindCommit(commitHash)
+		if err != nil {
+			return err
+		}
+
+		commit.OrderState = enums.ORDER_STATE_MADE
+		if err := tx.Save(commit).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	commit.OrderState = enums.ORDER_STATE_MADE
-	models.GetDB().Save(commit)
 
 	return cnsOrder, nil
 }
