@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -72,7 +73,6 @@ func GetCommit(commitHash string) (*models.Commit, error) {
 // ==================== utils ======================
 
 func newCommitArgsForContract(c *models.CommitArgs) (*contracts.CommitArgs, error) {
-	label := crypto.Keccak256Hash([]byte(c.Name))
 
 	owner, err := cfxaddress.New(c.Owner)
 	if err != nil {
@@ -102,7 +102,6 @@ func newCommitArgsForContract(c *models.CommitArgs) (*contracts.CommitArgs, erro
 
 	return &contracts.CommitArgs{
 		Name:          c.Name,
-		Label:         label,
 		Owner:         owner.MustGetCommonAddress(),
 		Duration:      duration,
 		Secret:        *secretBytes,
@@ -124,6 +123,7 @@ func genCommitData(c *models.CommitArgs) ([]byte, error) {
 
 func calcCommitHash(c *models.CommitArgs) (common.Hash, error) {
 	data, err := genCommitData(c)
+	logrus.WithField("data", hex.EncodeToString(data)).Info("gen commit data")
 	if err != nil {
 		return common.Hash{}, err
 	}

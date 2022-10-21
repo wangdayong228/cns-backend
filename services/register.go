@@ -54,6 +54,7 @@ func StartRegisterService() {
 	}
 }
 
+// TODO: implement
 func StartSyncRegisterService() {
 	// 1. find records has RegisterTxID
 	// orders, err := models.FindNeedSyncStateOrders()
