@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	ErrCommitAlreadyExists   = errors.New("commit already exists")
 	ErrCommitHashNotMatch    = errors.New("commit hash not match args")
 	ErrOrderStateUnrecognize = errors.New("unrecognized order state")
 	dataGen                  = contracts.DataGenerator{}
@@ -33,6 +34,10 @@ type QueryCommitsReq struct {
 }
 
 func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
+	if v, _ := models.FindCommit(c.CommitHash); v != nil {
+		return nil, ErrCommitAlreadyExists
+	}
+
 	// 1. verify commitHash is clac right
 	targeHash, err := calcCommitHash(&c.CommitArgs)
 	if err != nil {
@@ -48,7 +53,9 @@ func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
 	// 2. save
 	commit := &models.Commit{CommitCore: *c}
 	commit.OrderState = enums.ORDER_STATE_INIT
-	models.GetDB().Save(commit)
+	if err = models.GetDB().Save(commit).Error; err != nil {
+		return nil, err
+	}
 	return commit, nil
 }
 
