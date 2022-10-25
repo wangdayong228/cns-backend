@@ -60,13 +60,15 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 
 	// order 不存在
 	// 1. check commitHash is valid by contract
-	if _, err := models.FindCommit(commitHash.Hex()); err != nil {
+	commit, err := models.FindCommit(commitHash.Hex())
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			err = ErrMakeCommithashFirst
 		}
 		return nil, err
 	}
 
+	// 看过期时间
 	commitExpireTime, err := web3RegController.Commitments(nil, commitHash)
 	if err != nil {
 		return nil, err
@@ -80,6 +82,14 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		return nil, ErrCommitsExpired
 	}
 
+	// 获取价格
+	price, err := web3RegController.RentPriceInFiat(nil, commit.Name, big.NewInt(int64(commit.Duration)))
+	if err != nil {
+		return nil, err
+	}
+	amount := new(big.Int).Add(price.Base, price.Premium)
+	amount = amount.Div(amount, big.NewInt(1e6))
+
 	// 2. call payservice.makeorder and save order
 	provider, ok := penums.ParseTradeProviderByName(req.TradeProvider)
 	if !ok {
@@ -90,7 +100,7 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 
 	switch *provider {
 	case penums.TRADE_PROVIDER_WECHAT:
-		wecahtOrdReq := *confluxpay.NewServicesMakeWechatOrderReq(int32(req.Amount), *req.Description, int32(commitExpireTime.Int64()), int32(req.TradeType))
+		wecahtOrdReq := *confluxpay.NewServicesMakeWechatOrderReq(int32(amount.Int64()), *req.Description, int32(commitExpireTime.Int64()), int32(req.TradeType))
 		payOrder, _, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).WecahtOrdReq(wecahtOrdReq).Execute()
 		if err != nil {
 			return nil, err
