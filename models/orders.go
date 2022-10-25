@@ -47,16 +47,14 @@ func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {
 // TX_STATE_EXECUTED                                       // 3
 // TX_STATE_CONFIRMED
 func FindNeedSyncStateOrders(count int) ([]*CnsOrder, error) {
-	o := CnsOrder{}
-	o.RegisterTxID = 0
-
 	var orders []*CnsOrder
-	return orders, GetDB().Not(&o).
+	return orders, GetDB().
+		Not("register_tx_id = ?", 0).
 		Where("register_tx_state = ?", TX_STATE_INIT).
-		Or("register_tx_state = ?", TX_STATE_SEND_FAILED_RETRY).
-		Or("register_tx_state = ?", TX_STATE_SEND_FAILED_RETRY_UPPER_GAS).
-		Or("register_tx_state = ?", TX_STATE_POPULATED).
-		Or("register_tx_state = ?", TX_STATE_PENDING).
+		// Or("register_tx_state = ?", TX_STATE_SEND_FAILED_RETRY).
+		// Or("register_tx_state = ?", TX_STATE_SEND_FAILED_RETRY_UPPER_GAS).
+		// Or("register_tx_state = ?", TX_STATE_POPULATED).
+		// Or("register_tx_state = ?", TX_STATE_PENDING).
 		Find(&orders).
 		Limit(count).Error
 }

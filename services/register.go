@@ -7,6 +7,7 @@ import (
 	"github.com/wangdayong228/cns-backend/config"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
+	"gorm.io/gorm"
 )
 
 var (
@@ -27,26 +28,27 @@ func RegisterService() {
 
 		// 2. create txs for them
 		for _, item := range needs {
+			logrus.WithField("order", item).Error("creat register tx for order")
 			commit, err := models.FindCommit(item.CommitHash)
-			if err == nil {
+			if err != nil {
 				logrus.WithField("commit hash", item.CommitHash).WithError(err).Error("failed find commit")
 				continue
 			}
 
 			commitArgs, err := newCommitArgsForContract(&commit.CommitArgs)
-			if err == nil {
+			if err != nil {
 				logrus.WithField("commit args", commit.CommitArgs).WithError(err).Error("failed convert commit args")
 				continue
 			}
 
 			data, err := dataGen.Register(commitArgs)
-			if err == nil {
+			if err != nil {
 				logrus.WithField("args", commit.CommitArgs).WithError(err).Error("failed gen register data")
 				continue
 			}
 
-			tx, err := CreateTransaction(enums.CHAIN_TYPE_CFX, enums.ChainID(config.RpcVal.ChainID), from, to, nil, data)
-			if err == nil {
+			tx, err := CreateTransaction(enums.CHAIN_TYPE_CFX, enums.ChainID(config.RpcVal.ChainID), from.String(), to.String(), nil, data)
+			if err != nil {
 				logrus.WithFields(logrus.Fields{
 					"chainID": config.RpcVal.ChainID,
 					"from":    from,
@@ -70,9 +72,17 @@ func SyncRegisterStateService() {
 		// 1. find records has RegisterTxID and state is UnCompleted
 		orders, err := models.FindNeedSyncStateOrders(500)
 		if err != nil {
-			logrus.WithError(err).Error("failed find orders need by sync")
+			if err != gorm.ErrRecordNotFound {
+				logrus.WithError(err).Error("failed find orders need by sync")
+			}
 			continue
 		}
+
+		if len(orders) == 0 {
+			continue
+		}
+
+		logrus.WithField("orders", orders).Info("find orders need sync reigster state")
 
 		// 2. sync them
 		for _, o := range orders {

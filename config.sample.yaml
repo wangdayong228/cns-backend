@@ -1,5 +1,5 @@
 environment: development
-port: 8080
+port: 8081
 mysql:
   host: localhost
   port: 3306
@@ -12,10 +12,10 @@ log:
 rpc:
   url: https://test.confluxrpc.com
   chainID: 1
-  private_keys: ["0x22668895669f3d3a14cf68bcf346b0ed54470075ecb227dc9875bc85c901db44"]
-tx_engine:
+  privateKeys: ["0x22668895669f3d3a14cf68bcf346b0ed54470075ecb227dc9875bc85c901db44"]
+txEngine:
   retryLimit: 10
   sendCountOnce: 500
-cns_contracts:
-  register: 0x111
-  admin: cfx:ddd
+cnsContracts:
+  register: cfxtest:acbrnwph2609zbf21np0501d87xb9dnvuakpv911xk 
+  admin: cfxtest:aap8rzfhe7s7ju8ejrp2em4eamr3465y56r4cxb37e

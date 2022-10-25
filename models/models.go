@@ -48,5 +48,5 @@ func ConnectDB() {
 }
 
 func GetDB() *gorm.DB {
-	return db //.Debug()
+	return db.Debug()
 }

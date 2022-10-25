@@ -48,6 +48,7 @@ func initGin() *gin.Engine {
 func main() {
 	config.Init()
 	logger.Init()
+	services.Init()
 	models.ConnectDB()
 
 	services.StartServices()

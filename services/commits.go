@@ -39,8 +39,8 @@ func MakeCommits(c *models.CommitCore) (*models.Commit, error) {
 		return nil, err
 	}
 
-	sourceHash, _ := utils.StrToHash(c.CommitHash)
-	if *sourceHash != targeHash {
+	sourceHash := common.HexToHash(c.CommitHash)
+	if sourceHash != targeHash {
 		logrus.WithField("correct", targeHash).Info("commit hash not match")
 		return nil, ErrCommitHashNotMatch
 	}

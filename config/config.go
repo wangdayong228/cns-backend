@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Conflux-Chain/go-conflux-sdk/types/cfxaddress"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -27,7 +28,7 @@ func Init() {
 	}
 
 	initConfigs()
-	logrus.WithField("rpc", RpcVal).Info("init config completed")
+	logrus.WithField("rpc", RpcVal).WithField("contract", CnsContractVal).WithField("tx_engine", TxEngineVal).Info("init config completed")
 }
 
 type Rpc struct {
@@ -37,8 +38,8 @@ type Rpc struct {
 }
 
 type CnsContracts struct {
-	Register string
-	Admin    string
+	Register cfxaddress.Address
+	Admin    cfxaddress.Address
 }
 
 type TxEngine struct {

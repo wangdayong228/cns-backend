@@ -24,6 +24,7 @@ func SetupRoutes(router *gin.Engine) {
 		{
 			order.POST("/:commit_hash", controllers.MakeOrder)
 			order.GET("/:commit_hash", controllers.GetOrder)
+			order.PUT("/refresh-url/:commit_hash", controllers.RefreshURL)
 		}
 	}
 }

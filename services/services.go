@@ -4,13 +4,14 @@ import (
 	"os"
 
 	sdk "github.com/Conflux-Chain/go-conflux-sdk"
-	"github.com/spf13/viper"
 	tx_engine "github.com/wangdayong228/cns-backend/cfx-tx-engine"
 	"github.com/wangdayong228/cns-backend/config"
+	"github.com/wangdayong228/cns-backend/contracts"
 )
 
 var (
-	rpcClient *sdk.Client
+	rpcClient         *sdk.Client
+	web3RegController *contracts.Web3RegisterController
 )
 
 type Pagination struct {
@@ -38,12 +39,18 @@ func (p Pagination) CalcOffsetLimit() (offset int, limit int) {
 
 func Init() {
 	rpc := config.RpcVal
-	rpcClient = sdk.MustNewClient(viper.GetString(rpc.Url), sdk.ClientOption{
+	rpcClient = sdk.MustNewClient(rpc.Url, sdk.ClientOption{
 		RetryCount: 3,
 		Logger:     os.Stdout,
 	})
 	// TODO: add admin private key
 	rpcClient.SetAccountManager(tx_engine.NewPrivatekeyAccountManager(rpc.PrivateKeys, uint32(rpc.ChainID)))
+
+	tmp, err := contracts.NewWeb3RegisterController(config.CnsContractVal.Register, rpcClient)
+	if err != nil {
+		panic(err)
+	}
+	web3RegController = tmp
 }
 
 func StartServices() {

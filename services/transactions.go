@@ -16,6 +16,9 @@ import (
 type txProcesser func()
 
 func CreateTransaction(chainType enums.ChainType, chainId enums.ChainID, from string, to string, value *big.Int, data string) (*models.Transaction, error) {
+	if value == nil {
+		value = big.NewInt(0)
+	}
 	valueInDecimal := decimal.NewFromBigInt(value, 0)
 	tx := models.Transaction{
 		ChainType: uint(chainType),
