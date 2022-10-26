@@ -25,7 +25,10 @@ type CnsOrderCore struct {
 func FindOrderByCommitHash(commitHash string) (*CnsOrder, error) {
 	o := CnsOrder{}
 	o.CommitHash = commitHash
-	return &o, GetDB().Where(&o).First(&o).Error
+	if err := GetDB().Where(&o).First(&o).Error; err != nil {
+		return nil, err
+	}
+	return &o, nil
 }
 
 func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {

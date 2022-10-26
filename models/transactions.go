@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/hex"
+	"encoding/json"
 
 	// "github.com/nft-rainbow/rainbow-api/utils"
 
@@ -25,28 +26,56 @@ const (
 	TX_STATE_CONFIRMED                                      // 4
 )
 
-func (t TxState) String() string {
-	switch t {
-	case TX_STATE_SEND_FAILED_RETRY_UPPER_GAS:
-		return "Failed and will retry with improve gas price"
-	case TX_STATE_SEND_FAILED_RETRY:
-		return "Failed and will retry"
-	case TX_STATE_EXECUTE_FAILED:
-		return "Exectued and failed"
-	case TX_STATE_SEND_FAILED:
-		return "Send failed"
-	case TX_STATE_INIT:
-		return "Ready to send"
-	case TX_STATE_POPULATED:
-		return "Populated"
-	case TX_STATE_PENDING:
-		return "Pending"
-	case TX_STATE_EXECUTED:
-		return "Excuted and success"
-	case TX_STATE_CONFIRMED:
-		return "Confirmed"
+type TxStateDesc struct {
+	Code        string
+	Description string
+}
+
+var (
+	tradeProviderValue2StrMap  map[TxState]TxStateDesc
+	tradeProviderName2ValueMap map[string]TxState
+	tradeProviderCode2ValueMap map[string]TxState
+)
+
+func init() {
+	tradeProviderValue2StrMap = map[TxState]TxStateDesc{
+		TX_STATE_SEND_FAILED_RETRY_UPPER_GAS: {"SEND_FAILED_RETRY_UPPER_GAS", "Failed and will retry with improve gas price"},
+		TX_STATE_SEND_FAILED_RETRY:           {"SEND_FAILED_RETRY", "Failed and will retry"},
+		TX_STATE_EXECUTE_FAILED:              {"EXECUTE_FAILED", "Exectued and failed"},
+		TX_STATE_SEND_FAILED:                 {"SEND_FAILED", "Send failed"},
+		TX_STATE_INIT:                        {"INIT", "Ready to send"},
+		TX_STATE_POPULATED:                   {"POPULATED", "Populated"},
+		TX_STATE_PENDING:                     {"PENDING", "Pending"},
+		TX_STATE_EXECUTED:                    {"EXECUTED_SUCCESS", "Excuted and success"},
+		TX_STATE_CONFIRMED:                   {"CONFIRMED", "Confirmed"},
 	}
-	return "Unrecgonize"
+
+	tradeProviderName2ValueMap = make(map[string]TxState)
+	tradeProviderCode2ValueMap = make(map[string]TxState)
+	for k, v := range tradeProviderValue2StrMap {
+		tradeProviderName2ValueMap[v.Description] = k
+		tradeProviderCode2ValueMap[v.Code] = k
+	}
+}
+
+func (t TxState) String() string {
+	v, ok := tradeProviderValue2StrMap[t]
+	if ok {
+		return v.Description
+	}
+	return "unknown"
+}
+
+func (t TxState) Code() string {
+	v, ok := tradeProviderValue2StrMap[t]
+	if ok {
+		return v.Code
+	}
+	return "unknown"
+}
+
+func (t TxState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.Code())
 }
 
 func (t TxState) IsSuccess() bool {

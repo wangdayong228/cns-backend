@@ -1,11 +1,13 @@
 package ginutils
 
 import (
+	"errors"
 	"net/http"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	rainbow_errors "github.com/wangdayong228/cns-backend/cns_errors"
+	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
 )
 
 func DataResponse(data interface{}) interface{} {
@@ -46,6 +48,10 @@ func RenderRespError(c *gin.Context, err error, rainbowErrorCode ...rainbow_erro
 	if re, ok := err.(rainbow_errors.RainbowError); ok {
 		re.RenderJSON(c)
 		return
+	}
+
+	if re, ok := err.(*confluxpay.GenericOpenAPIError); ok {
+		err = errors.New(string(re.Body()))
 	}
 
 	_rainbowErrorCode := rainbow_errors.ERR_INTERNAL_SERVER_COMMON

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"math/big"
 	"os"
 
 	sdk "github.com/Conflux-Chain/go-conflux-sdk"
@@ -12,6 +13,7 @@ import (
 var (
 	rpcClient         *sdk.Client
 	web3RegController *contracts.Web3RegisterController
+	maxCommitmentAge  *big.Int
 )
 
 type Pagination struct {
@@ -43,14 +45,18 @@ func Init() {
 		RetryCount: 3,
 		Logger:     os.Stdout,
 	})
-	// TODO: add admin private key
 	rpcClient.SetAccountManager(tx_engine.NewPrivatekeyAccountManager(rpc.PrivateKeys, uint32(rpc.ChainID)))
 
-	tmp, err := contracts.NewWeb3RegisterController(config.CnsContractVal.Register, rpcClient)
+	var err error
+	web3RegController, err = contracts.NewWeb3RegisterController(config.CnsContractVal.Register, rpcClient)
 	if err != nil {
 		panic(err)
 	}
-	web3RegController = tmp
+
+	maxCommitmentAge, err = web3RegController.MaxCommitmentAge(nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func StartServices() {

@@ -28,10 +28,13 @@ type CommitArgs struct {
 func FindCommit(commitHash string) (*Commit, error) {
 	c := &Commit{}
 	c.CommitHash = commitHash
-	return c, GetDB().Where(c).First(c).Error
+	if err := GetDB().Where(c).First(c).Error; err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 func FindCommits(condition *Commit, offset int, limit int) ([]*Commit, error) {
-	commits := []*Commit{}
+	var commits []*Commit = nil
 	return commits, GetDB().Where(condition).Find(&commits).Offset(offset).Limit(limit).Error
 }

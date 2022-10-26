@@ -51,9 +51,16 @@ func initConfigs() {
 	if err := viper.UnmarshalKey("rpc", &RpcVal); err != nil {
 		panic(err)
 	}
-	if err := viper.UnmarshalKey("cnsContracts", &CnsContractVal); err != nil {
+
+	tmp := make(map[string]string)
+	if err := viper.UnmarshalKey("cnsContracts", &tmp); err != nil {
 		panic(err)
 	}
+	fmt.Println(tmp)
+	CnsContractVal = &CnsContracts{}
+	CnsContractVal.Register = cfxaddress.MustNew(tmp["register"])
+	CnsContractVal.Admin = cfxaddress.MustNew(tmp["admin"])
+
 	if err := viper.UnmarshalKey("txEngine", &TxEngineVal); err != nil {
 		panic(err)
 	}

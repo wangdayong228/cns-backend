@@ -92,6 +92,7 @@ func SyncRegisterStateService() {
 				continue
 			}
 			if tx.IsFinalized() {
+				o.RegisterTxHash = tx.Hash
 				o.RegisterTxState = models.TxState(tx.State)
 				if err = models.GetDB().Save(o).Error; err != nil {
 					logrus.WithField("order", o).WithError(err).Error("failed save order")

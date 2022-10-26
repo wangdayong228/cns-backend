@@ -15,3 +15,9 @@
 9. [X] 根据流程图完善下单逻辑(现在order已存在直接返回错误，因为commithash生成成本非常低)
 10. [ ] 注册失败退款
 11. [X] make commit 如果已存在返回错误
+12. [ ] 处理conflux-pay 服务返回的错误
+
+INIT
+SEND_FAILED
+EXECUTE_FAILED
+EXECUTED_SUCCESS

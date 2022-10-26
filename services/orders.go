@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/sirupsen/logrus"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
@@ -35,6 +36,7 @@ var (
 	ErrCommitsUnexists     = errors.New("commitment invalid: not exist")
 	ErrCommitsExpired      = errors.New("commitment invalid: expired")
 	ErrOrderUnexists       = errors.New("order is exists, if need refresh url please invoke API 'RefreshUrl'")
+	ErrOrderCompleted      = errors.New("order is completed")
 )
 
 func init() {
@@ -78,6 +80,7 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		return nil, ErrCommitsUnexists
 	}
 
+	commitExpireTime = new(big.Int).Add(commitExpireTime, maxCommitmentAge)
 	if commitExpireTime.Cmp(big.NewInt(time.Now().Unix())) < 0 {
 		return nil, ErrCommitsExpired
 	}
@@ -89,6 +92,9 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 	}
 	amount := new(big.Int).Add(price.Base, price.Premium)
 	amount = amount.Div(amount, big.NewInt(1e6))
+	if amount.Cmp(big.NewInt(0)) == 0 {
+		amount = big.NewInt(1)
+	}
 
 	// 2. call payservice.makeorder and save order
 	provider, ok := penums.ParseTradeProviderByName(req.TradeProvider)
@@ -103,6 +109,7 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		wecahtOrdReq := *confluxpay.NewServicesMakeWechatOrderReq(int32(amount.Int64()), *req.Description, int32(commitExpireTime.Int64()), int32(req.TradeType))
 		payOrder, _, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).WecahtOrdReq(wecahtOrdReq).Execute()
 		if err != nil {
+			logrus.WithError(err).WithField("order request", wecahtOrdReq).Info("failed to make order throught conflux-pay")
 			return nil, err
 		}
 	default:
@@ -166,6 +173,10 @@ func RefreshURL(commitHash string) (*models.CnsOrder, error) {
 	order, err := GetOrder(commitHash)
 	if err != nil {
 		return nil, err
+	}
+
+	if order.TradeState.IsStable() {
+		return nil, ErrOrderCompleted
 	}
 
 	resp, _, err := confluxPayClient.OrdersApi.RefreshPayUrl(context.Background(), order.TradeNo).Execute()
