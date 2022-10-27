@@ -87,5 +87,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221018104045-bddfd284e038 => ../conflux-pay-sdk-go
+replace github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221019033631-faac2a3e64fa => ../conflux-pay-sdk-go
 replace github.com/wangdayong228/conflux-pay v0.0.0-20221018035346-0f908740100f => ../conflux-pay

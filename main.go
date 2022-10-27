@@ -23,8 +23,8 @@ func initGin() *gin.Engine {
 	engine := gin.New()
 	engine.Use(gin.Logger())
 	engine.Use(middlewares.Logger())
-	// engine.Use(gin.Recovery())
-	engine.Use(middlewares.Recovery())
+	engine.Use(gin.Recovery())
+	// engine.Use(middlewares.Recovery())
 	return engine
 }
 

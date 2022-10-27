@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -25,6 +26,7 @@ func RegisterService() {
 			time.Sleep(time.Second * 5)
 			continue
 		}
+		logrus.WithField("needs", needs).Info("find need register orders")
 
 		// 2. create txs for them
 		for _, item := range needs {
@@ -94,6 +96,13 @@ func SyncRegisterStateService() {
 			if tx.IsFinalized() {
 				o.RegisterTxHash = tx.Hash
 				o.RegisterTxState = models.TxState(tx.State)
+				// refund
+				_, _, err := confluxPayClient.OrdersApi.Refund(context.Background(), o.TradeNo).Execute()
+				if err != nil {
+					logrus.WithField("order", o).WithError(err).Error("failed refund order")
+					continue
+				}
+
 				if err = models.GetDB().Save(o).Error; err != nil {
 					logrus.WithField("order", o).WithError(err).Error("failed save order")
 					continue

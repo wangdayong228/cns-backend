@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -18,8 +19,9 @@ import (
 )
 
 type OrderReq struct {
-	TradeProvider string `json:"trade_provider"`
-	pservice.MakeOrderReq
+	TradeProvider string           `json:"trade_provider" swaggertype:"string"`
+	TradeType     penums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
+	Description   *string          `json:"description" binding:"required"`
 }
 
 type OrderResp struct {
@@ -91,8 +93,10 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		return nil, err
 	}
 	amount := new(big.Int).Add(price.Base, price.Premium)
+	fmt.Println("price 1", amount)
 	amount = amount.Div(amount, big.NewInt(1e6))
-	if amount.Cmp(big.NewInt(0)) == 0 {
+	fmt.Println("price 2", amount)
+	if amount.Cmp(big.NewInt(1)) <= 0 {
 		amount = big.NewInt(1)
 	}
 
@@ -106,12 +110,15 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 
 	switch *provider {
 	case penums.TRADE_PROVIDER_WECHAT:
-		wecahtOrdReq := *confluxpay.NewServicesMakeWechatOrderReq(int32(amount.Int64()), *req.Description, int32(commitExpireTime.Int64()), int32(req.TradeType))
-		payOrder, _, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).WecahtOrdReq(wecahtOrdReq).Execute()
+		wecahtOrdReq := *confluxpay.NewServicesMakeOrderReq(int32(amount.Int64()), *req.Description, int32(commitExpireTime.Int64()), req.TradeType.String())
+
+		var resp *http.Response
+		payOrder, resp, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).MakeOrdReq(wecahtOrdReq).Execute()
 		if err != nil {
 			logrus.WithError(err).WithField("order request", wecahtOrdReq).Info("failed to make order throught conflux-pay")
 			return nil, err
 		}
+		fmt.Printf("make order resp %v\n", resp)
 	default:
 		return nil, fmt.Errorf("unspport")
 	}
@@ -153,7 +160,7 @@ func GetOrder(commitHash string) (*models.CnsOrder, error) {
 		return nil, err
 	}
 
-	if o.TradeState.IsStable() {
+	if o.TradeState.IsStable() && o.RefundState.IsStable() {
 		return o, nil
 	}
 
@@ -162,10 +169,7 @@ func GetOrder(commitHash string) (*models.CnsOrder, error) {
 		return nil, err
 	}
 
-	if penums.TradeState(*resp.TradeState).IsStable() {
-		o.TradeState = penums.TradeState(*resp.TradeState)
-		models.GetDB().Save(o)
-	}
+	models.UpdateOrderState(commitHash, resp)
 	return o, nil
 }
 

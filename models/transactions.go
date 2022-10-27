@@ -15,7 +15,7 @@ import (
 type TxState int
 
 const (
-	TX_STATE_SEND_FAILED_RETRY_UPPER_GAS TxState = iota - 4 // -3
+	TX_STATE_SEND_FAILED_RETRY_UPPER_GAS TxState = iota - 4 // -4
 	TX_STATE_SEND_FAILED_RETRY                              // -3
 	TX_STATE_EXECUTE_FAILED                                 // -2
 	TX_STATE_SEND_FAILED                                    // -1
