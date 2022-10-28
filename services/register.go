@@ -14,6 +14,7 @@ import (
 
 var (
 	lastRegisterdOrderId uint
+	regOrderOperator     = models.RegisterOrderOperater{}
 )
 
 func RegisterService() {
@@ -22,7 +23,7 @@ func RegisterService() {
 
 	for {
 		// 1. find need register orders
-		needs, _ := models.FindNeedRegiterOrders(lastRegisterdOrderId)
+		needs, _ := regOrderOperator.FindNeedRegiterOrders(lastRegisterdOrderId)
 		if len(needs) == 0 {
 			time.Sleep(time.Second * 5)
 			continue
@@ -60,7 +61,7 @@ func RegisterService() {
 				}).WithError(err).Error("failed gen register data")
 				continue
 			}
-			item.RegisterTxID = tx.ID
+			item.TxID = tx.ID
 			models.GetDB().Save(item)
 			lastRegisterdOrderId = item.ID
 		}
@@ -73,7 +74,7 @@ func SyncRegisterStateService() {
 	for {
 		time.Sleep(time.Second * 5)
 		// 1. find records has RegisterTxID and state is UnCompleted
-		orders, err := models.FindNeedSyncStateOrders(500)
+		orders, err := regOrderOperator.FindNeedSyncStateRegOrders(500)
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
 				logrus.WithError(err).Error("failed find orders need by sync")
@@ -89,21 +90,21 @@ func SyncRegisterStateService() {
 
 		// 2. sync them
 		for _, o := range orders {
-			tx, err := models.FindTransactionByID(o.RegisterTxID)
+			tx, err := models.FindTransactionByID(o.TxID)
 			if err != nil {
-				logrus.WithField("tx_id", o.RegisterTxID).WithError(err).Error("failed find tx by id")
+				logrus.WithField("tx_id", o.TxID).WithError(err).Error("failed find tx by id")
 				continue
 			}
 			if tx.IsFinalized() {
-				o.RegisterTxHash = tx.Hash
-				o.RegisterTxState = models.TxState(tx.State)
+				o.TxHash = tx.Hash
+				o.TxState = models.TxState(tx.State)
 
 				if err = models.GetDB().Save(o).Error; err != nil {
 					logrus.WithField("order", o).WithError(err).Error("failed save order")
 					continue
 				}
 
-				if o.RegisterTxState.IsSuccess() {
+				if o.TxState.IsSuccess() {
 					continue
 				}
 

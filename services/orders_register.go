@@ -29,11 +29,12 @@ type MakeRegisterOrderResp struct {
 }
 
 type RegisterOrderService struct {
+	modelOperator models.RegisterOrderOperater
 }
 
 func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.RegisterOrder, error) {
 	//  verify
-	order, err := models.FindOrderByCommitHash(commitHash.Hex())
+	order, err := r.modelOperator.FindRegOrderByCommitHash(commitHash.Hex())
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash c
 		return nil, fmt.Errorf("unspport")
 	}
 
-	RegisterOrder, err := models.NewOrderByPayResp(payOrder, commitHash.Hex())
+	RegisterOrder, err := models.NewRegOrderByPayResp(payOrder, commitHash.Hex())
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,7 @@ func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash c
 }
 
 func (r *RegisterOrderService) GetOrder(commitHash string) (*models.RegisterOrder, error) {
-	o, err := models.FindOrderByCommitHash(commitHash)
+	o, err := r.modelOperator.FindRegOrderByCommitHash(commitHash)
 	if err != nil {
 		return nil, err
 	}
@@ -151,26 +152,26 @@ func (r *RegisterOrderService) GetOrder(commitHash string) (*models.RegisterOrde
 		return nil, err
 	}
 
-	models.UpdateOrderState(commitHash, resp)
+	r.modelOperator.UpdateRegOrderState(commitHash, resp)
 	return o, nil
 }
 
 func (r *RegisterOrderService) RefreshURL(commitHash string) (*models.RegisterOrder, error) {
-	order, err := r.GetOrder(commitHash)
+	o, err := r.GetOrder(commitHash)
 	if err != nil {
 		return nil, err
 	}
 
-	if order.TradeState.IsStable() {
+	if o.IsStable() {
 		return nil, ErrOrderCompleted
 	}
 
-	resp, _, err := confluxPayClient.OrdersApi.RefreshPayUrl(context.Background(), order.TradeNo).Execute()
+	resp, _, err := confluxPayClient.OrdersApi.RefreshPayUrl(context.Background(), o.TradeNo).Execute()
 	if err != nil {
 		return nil, err
 	}
 
-	order.CodeUrl = resp.CodeUrl
-	order.H5Url = resp.H5Url
-	return order, nil
+	o.CodeUrl = resp.CodeUrl
+	o.H5Url = resp.H5Url
+	return o, nil
 }
