@@ -8,6 +8,10 @@ import (
 	"github.com/wangdayong228/cns-backend/utils/ginutils"
 )
 
+var (
+	regOrderCtrl = controllers.NewRegisterOrderCtrl()
+)
+
 func SetupRoutes(router *gin.Engine) {
 	router.GET("/", indexEndpoint)
 
@@ -20,12 +24,20 @@ func SetupRoutes(router *gin.Engine) {
 			commit.GET("/", controllers.QueryCommits)
 		}
 
-		order := api.Group("orders")
+		regOrders := api.Group("orders/register")
 		{
-			order.POST("/:commit_hash", controllers.MakeRegisterOrder)
-			order.GET("/:commit_hash", controllers.GetOrder)
-			order.PUT("/refresh-url/:commit_hash", controllers.RefreshURL)
+			regOrders.POST("/:commit_hash", regOrderCtrl.MakeOrder)
+			regOrders.GET("/:commit_hash", regOrderCtrl.GetOrder)
+			regOrders.PUT("/refresh-url/:commit_hash", regOrderCtrl.RefreshURL)
 		}
+
+		renewOrders := api.Group("orders/renew")
+		{
+			renewOrders.POST("/", nil)
+			renewOrders.GET("/:id", nil)
+			renewOrders.PUT("/refresh-url/:id", nil)
+		}
+
 	}
 }
 

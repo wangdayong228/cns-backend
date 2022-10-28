@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -29,28 +28,10 @@ type MakeRegisterOrderResp struct {
 	pservice.MakeOrderResp
 }
 
-var (
-// confluxPayClient *confluxpay.APIClient
-)
+type RegisterOrderService struct {
+}
 
-var (
-	ErrMakeCommithashFirst       = errors.New("commitment not found, please make commit before make order")
-	ErrCommitsUnsubmitOnContract = errors.New("commitment invalid: not submit on contract")
-	ErrCommitsExpired            = errors.New("commitment invalid: expired")
-	ErrOrderUnexists             = errors.New("order is exists, if need refresh url please invoke API 'RefreshUrl'")
-	ErrOrderCompleted            = errors.New("order is completed")
-)
-
-// func init() {
-// 	configuration := confluxpay.NewConfiguration()
-// 	configuration.Servers = confluxpay.ServerConfigurations{{
-// 		URL:         "http://127.0.0.1:8080/v0",
-// 		Description: "No description provided",
-// 	}}
-// 	confluxPayClient = confluxpay.NewAPIClient(configuration)
-// }
-
-func MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.RegisterOrder, error) {
+func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.RegisterOrder, error) {
 	//  verify
 	order, err := models.FindOrderByCommitHash(commitHash.Hex())
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -94,9 +75,9 @@ func MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.Regis
 		return nil, err
 	}
 	amount := new(big.Int).Add(price.Base, price.Premium)
-	fmt.Println("price 1", amount)
+	// fmt.Println("price 1", amount)
 	amount = amount.Div(amount, big.NewInt(1e6))
-	fmt.Println("price 2", amount)
+	// fmt.Println("price 2", amount)
 	if amount.Cmp(big.NewInt(1)) <= 0 {
 		amount = big.NewInt(1)
 	}
@@ -155,7 +136,7 @@ func MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.Regis
 	return RegisterOrder, nil
 }
 
-func GetOrder(commitHash string) (*models.RegisterOrder, error) {
+func (r *RegisterOrderService) GetOrder(commitHash string) (*models.RegisterOrder, error) {
 	o, err := models.FindOrderByCommitHash(commitHash)
 	if err != nil {
 		return nil, err
@@ -174,8 +155,8 @@ func GetOrder(commitHash string) (*models.RegisterOrder, error) {
 	return o, nil
 }
 
-func RefreshURL(commitHash string) (*models.RegisterOrder, error) {
-	order, err := GetOrder(commitHash)
+func (r *RegisterOrderService) RefreshURL(commitHash string) (*models.RegisterOrder, error) {
+	order, err := r.GetOrder(commitHash)
 	if err != nil {
 		return nil, err
 	}

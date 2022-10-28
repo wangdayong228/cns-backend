@@ -11,8 +11,16 @@ import (
 	pservice "github.com/wangdayong228/conflux-pay/services"
 )
 
+type RegisterOrderCtrl struct {
+	regOrderSev *services.RegisterOrderService
+}
+
+func NewRegisterOrderCtrl() *RegisterOrderCtrl {
+	return &RegisterOrderCtrl{&services.RegisterOrderService{}}
+}
+
 // CNS_BACKEND
-func MakeRegisterOrder(c *gin.Context) {
+func (r *RegisterOrderCtrl) MakeOrder(c *gin.Context) {
 	var req services.MakeRegisterOrderReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -25,7 +33,7 @@ func MakeRegisterOrder(c *gin.Context) {
 		return
 	}
 
-	order, err := services.MakeOrder(&req, common.HexToHash(commitHash))
+	order, err := r.regOrderSev.MakeOrder(&req, common.HexToHash(commitHash))
 	if err != nil {
 		ginutils.RenderRespError(c, err)
 		return
@@ -45,13 +53,13 @@ func MakeRegisterOrder(c *gin.Context) {
 	ginutils.RenderRespOK(c, resp)
 }
 
-func GetOrder(c *gin.Context) {
+func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
 	}
-	order, err := services.GetOrder(commitHash)
+	order, err := r.regOrderSev.GetOrder(commitHash)
 	if err != nil {
 		ginutils.RenderRespError(c, err)
 		return
@@ -59,13 +67,13 @@ func GetOrder(c *gin.Context) {
 	ginutils.RenderRespOK(c, order.RegisterOrderCore)
 }
 
-func RefreshURL(c *gin.Context) {
+func (r *RegisterOrderCtrl) RefreshURL(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
 	}
-	order, err := services.RefreshURL(commitHash)
+	order, err := r.regOrderSev.RefreshURL(commitHash)
 	if err != nil {
 		ginutils.RenderRespError(c, err)
 		return
