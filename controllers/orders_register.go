@@ -12,8 +12,8 @@ import (
 )
 
 // CNS_BACKEND
-func MakeOrder(c *gin.Context) {
-	var req services.OrderReq
+func MakeRegisterOrder(c *gin.Context) {
+	var req services.MakeRegisterOrderReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
@@ -31,7 +31,7 @@ func MakeOrder(c *gin.Context) {
 		return
 	}
 
-	resp := services.OrderResp{
+	resp := services.MakeRegisterOrderResp{
 		CommitHash: commitHash,
 		MakeOrderResp: pservice.MakeOrderResp{
 			TradeProvider: order.Provider,
@@ -56,7 +56,7 @@ func GetOrder(c *gin.Context) {
 		ginutils.RenderRespError(c, err)
 		return
 	}
-	ginutils.RenderRespOK(c, order.CnsOrderCore)
+	ginutils.RenderRespOK(c, order.RegisterOrderCore)
 }
 
 func RefreshURL(c *gin.Context) {
@@ -71,7 +71,7 @@ func RefreshURL(c *gin.Context) {
 		return
 	}
 
-	resp := services.OrderResp{
+	resp := services.MakeRegisterOrderResp{
 		CommitHash: commitHash,
 		MakeOrderResp: pservice.MakeOrderResp{
 			TradeProvider: order.Provider,

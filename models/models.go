@@ -42,7 +42,7 @@ func ConnectDB() {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&CnsOrder{})
+	db.AutoMigrate(&RegisterOrder{})
 	db.AutoMigrate(&Commit{})
 	db.AutoMigrate(&Transaction{})
 }

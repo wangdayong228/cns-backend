@@ -9,12 +9,12 @@ import (
 	penums "github.com/wangdayong228/conflux-pay/models/enums"
 )
 
-type CnsOrder struct {
+type RegisterOrder struct {
 	BaseModel
-	CnsOrderCore
+	RegisterOrderCore
 }
 
-type CnsOrderCore struct {
+type RegisterOrderCore struct {
 	pmodels.OrderCore
 	CommitHash      string  `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
 	RegisterTxID    uint    `json:"-"`
@@ -22,7 +22,7 @@ type CnsOrderCore struct {
 	RegisterTxState TxState `gorm:"type:varchar(255)" json:"register_tx_state"`
 }
 
-func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*CnsOrder, error) {
+func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*RegisterOrder, error) {
 	tv, err := time.Parse("2006-01-02T15:04:05+08:00", *payResp.TimeExpire)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*Cns
 		return nil, errors.New("unkown trade type or trade provider or trade state or refund state")
 	}
 
-	o := CnsOrder{}
+	o := RegisterOrder{}
 	o.Amount = uint(*payResp.Amount)
 	o.AppName = *payResp.AppName
 	o.CodeUrl = payResp.CodeUrl
@@ -54,8 +54,8 @@ func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*Cns
 	return &o, nil
 }
 
-func FindOrderByCommitHash(commitHash string) (*CnsOrder, error) {
-	o := CnsOrder{}
+func FindOrderByCommitHash(commitHash string) (*RegisterOrder, error) {
+	o := RegisterOrder{}
 	o.CommitHash = commitHash
 	if err := GetDB().Where(&o).First(&o).Error; err != nil {
 		return nil, err
@@ -63,12 +63,12 @@ func FindOrderByCommitHash(commitHash string) (*CnsOrder, error) {
 	return &o, nil
 }
 
-func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {
-	o := CnsOrder{}
+func FindNeedRegiterOrders(startID uint) ([]*RegisterOrder, error) {
+	o := RegisterOrder{}
 	o.TradeState = penums.TRADE_STATE_SUCCESSS
 	o.RegisterTxID = 0
 
-	var orders []*CnsOrder
+	var orders []*RegisterOrder
 	return orders, GetDB().Where("id > ? and register_tx_id = ?", startID, 0).Where(&o).Find(&orders).Error
 }
 
@@ -81,8 +81,8 @@ func FindNeedRegiterOrders(startID uint) ([]*CnsOrder, error) {
 // TX_STATE_PENDING                                        // 2
 // TX_STATE_EXECUTED                                       // 3
 // TX_STATE_CONFIRMED
-func FindNeedSyncStateOrders(count int) ([]*CnsOrder, error) {
-	var orders []*CnsOrder
+func FindNeedSyncStateOrders(count int) ([]*RegisterOrder, error) {
+	var orders []*RegisterOrder
 	return orders, GetDB().
 		Not("register_tx_id = ?", 0).
 		Where("register_tx_state = ?", TX_STATE_INIT).
@@ -94,7 +94,7 @@ func FindNeedSyncStateOrders(count int) ([]*CnsOrder, error) {
 		Limit(count).Error
 }
 
-func (o *CnsOrderCore) IsStable() bool {
+func (o *RegisterOrderCore) IsStable() bool {
 	if o.OrderCore.IsStable() {
 		return true
 	}

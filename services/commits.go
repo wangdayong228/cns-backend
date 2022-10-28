@@ -28,7 +28,7 @@ type MakeCommitResp struct {
 }
 
 type QueryCommitsReq struct {
-	Pagination
+	utils.Pagination
 	OrderState *string `json:"order_state,omitempty"`
 	Owner      string  `json:"owner,omitempty"`
 }

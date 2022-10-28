@@ -18,19 +18,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrderReq struct {
+type MakeRegisterOrderReq struct {
 	TradeProvider string           `json:"trade_provider" swaggertype:"string"`
 	TradeType     penums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
 	Description   *string          `json:"description" binding:"required"`
 }
 
-type OrderResp struct {
+type MakeRegisterOrderResp struct {
 	CommitHash string `json:"commit_hash"`
 	pservice.MakeOrderResp
 }
 
 var (
-	confluxPayClient *confluxpay.APIClient
+// confluxPayClient *confluxpay.APIClient
 )
 
 var (
@@ -41,16 +41,16 @@ var (
 	ErrOrderCompleted            = errors.New("order is completed")
 )
 
-func init() {
-	configuration := confluxpay.NewConfiguration()
-	configuration.Servers = confluxpay.ServerConfigurations{{
-		URL:         "http://127.0.0.1:8080/v0",
-		Description: "No description provided",
-	}}
-	confluxPayClient = confluxpay.NewAPIClient(configuration)
-}
+// func init() {
+// 	configuration := confluxpay.NewConfiguration()
+// 	configuration.Servers = confluxpay.ServerConfigurations{{
+// 		URL:         "http://127.0.0.1:8080/v0",
+// 		Description: "No description provided",
+// 	}}
+// 	confluxPayClient = confluxpay.NewAPIClient(configuration)
+// }
 
-func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) {
+func MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.RegisterOrder, error) {
 	//  verify
 	order, err := models.FindOrderByCommitHash(commitHash.Hex())
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -124,7 +124,7 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		return nil, fmt.Errorf("unspport")
 	}
 
-	cnsOrder, err := models.NewOrderByPayResp(payOrder, commitHash.Hex())
+	RegisterOrder, err := models.NewOrderByPayResp(payOrder, commitHash.Hex())
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 			return err
 		}
 
-		if err := tx.Save(cnsOrder).Error; err != nil {
+		if err := tx.Save(RegisterOrder).Error; err != nil {
 			return err
 		}
 
@@ -152,10 +152,10 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 		return nil, err
 	}
 
-	return cnsOrder, nil
+	return RegisterOrder, nil
 }
 
-func GetOrder(commitHash string) (*models.CnsOrder, error) {
+func GetOrder(commitHash string) (*models.RegisterOrder, error) {
 	o, err := models.FindOrderByCommitHash(commitHash)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func GetOrder(commitHash string) (*models.CnsOrder, error) {
 	return o, nil
 }
 
-func RefreshURL(commitHash string) (*models.CnsOrder, error) {
+func RefreshURL(commitHash string) (*models.RegisterOrder, error) {
 	order, err := GetOrder(commitHash)
 	if err != nil {
 		return nil, err

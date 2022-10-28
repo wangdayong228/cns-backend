@@ -45,3 +45,8 @@ func (*DataGenerator) Register(args *CommitArgs) (string, error) {
 	v, err := web3RegisterController.Pack("registerWithFiat", args.Name, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
 	return utils.Bytes2Hex(v), err
 }
+
+func (*DataGenerator) Renew(name string, duration *big.Int) (string, error) {
+	v, err := web3RegisterController.Pack("renew", name, duration)
+	return utils.Bytes2Hex(v), err
+}

@@ -22,7 +22,7 @@ func SetupRoutes(router *gin.Engine) {
 
 		order := api.Group("orders")
 		{
-			order.POST("/:commit_hash", controllers.MakeOrder)
+			order.POST("/:commit_hash", controllers.MakeRegisterOrder)
 			order.GET("/:commit_hash", controllers.GetOrder)
 			order.PUT("/refresh-url/:commit_hash", controllers.RefreshURL)
 		}
