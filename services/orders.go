@@ -34,11 +34,11 @@ var (
 )
 
 var (
-	ErrMakeCommithashFirst = errors.New("commitment not found, please make commit before make order")
-	ErrCommitsUnexists     = errors.New("commitment invalid: not exist")
-	ErrCommitsExpired      = errors.New("commitment invalid: expired")
-	ErrOrderUnexists       = errors.New("order is exists, if need refresh url please invoke API 'RefreshUrl'")
-	ErrOrderCompleted      = errors.New("order is completed")
+	ErrMakeCommithashFirst       = errors.New("commitment not found, please make commit before make order")
+	ErrCommitsUnsubmitOnContract = errors.New("commitment invalid: not submit on contract")
+	ErrCommitsExpired            = errors.New("commitment invalid: expired")
+	ErrOrderUnexists             = errors.New("order is exists, if need refresh url please invoke API 'RefreshUrl'")
+	ErrOrderCompleted            = errors.New("order is completed")
 )
 
 func init() {
@@ -73,19 +73,20 @@ func MakeOrder(req *OrderReq, commitHash common.Hash) (*models.CnsOrder, error) 
 	}
 
 	// 看过期时间
-	commitExpireTime, err := web3RegController.Commitments(nil, commitHash)
+	commitSubmitTime, err := web3RegController.Commitments(nil, commitHash)
 	if err != nil {
 		return nil, err
 	}
 
-	if commitExpireTime.Cmp(big.NewInt(0)) == 0 {
-		return nil, ErrCommitsUnexists
+	if commitSubmitTime.Cmp(big.NewInt(0)) == 0 {
+		return nil, ErrCommitsUnsubmitOnContract
 	}
 
-	commitExpireTime = new(big.Int).Add(commitExpireTime, maxCommitmentAge)
+	commitExpireTime := new(big.Int).Add(commitSubmitTime, maxCommitmentAge)
 	if commitExpireTime.Cmp(big.NewInt(time.Now().Unix())) < 0 {
 		return nil, ErrCommitsExpired
 	}
+	fmt.Printf("commit times %v %v %v\n", commitSubmitTime, maxCommitmentAge, commitExpireTime)
 
 	// 获取价格
 	price, err := web3RegController.RentPriceInFiat(nil, commit.Name, big.NewInt(int64(commit.Duration)))
@@ -160,7 +161,7 @@ func GetOrder(commitHash string) (*models.CnsOrder, error) {
 		return nil, err
 	}
 
-	if o.TradeState.IsStable() && o.RefundState.IsStable() {
+	if o.IsStable() {
 		return o, nil
 	}
 

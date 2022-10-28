@@ -5,9 +5,7 @@ import (
 	"time"
 
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
-	"github.com/wangdayong228/conflux-pay/models"
 	pmodels "github.com/wangdayong228/conflux-pay/models"
-	"github.com/wangdayong228/conflux-pay/models/enums"
 	penums "github.com/wangdayong228/conflux-pay/models/enums"
 )
 
@@ -30,12 +28,13 @@ func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*Cns
 		return nil, err
 	}
 
-	provider, ok1 := enums.ParseTradeProviderByName(*payResp.TradeProvider)
-	tradeState, ok2 := enums.ParseTradeState(*payResp.TradeState)
-	tradeType, ok3 := enums.ParseTradeType(*payResp.TradeType)
+	provider, ok1 := penums.ParseTradeProviderByName(*payResp.TradeProvider)
+	tradeState, ok2 := penums.ParseTradeState(*payResp.TradeState)
+	tradeType, ok3 := penums.ParseTradeType(*payResp.TradeType)
+	refundState, ok4 := penums.ParserefundState(*payResp.RefundState)
 
-	if !ok1 || !ok2 || !ok3 {
-		return nil, errors.New("unkown trade type or trade provider or trade state")
+	if !ok1 || !ok2 || !ok3 || !ok4 {
+		return nil, errors.New("unkown trade type or trade provider or trade state or refund state")
 	}
 
 	o := CnsOrder{}
@@ -49,6 +48,7 @@ func NewOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*Cns
 	o.TimeExpire = &tv
 	o.TradeNo = *payResp.TradeNo
 	o.TradeState = *tradeState
+	o.RefundState = *refundState
 	o.TradeType = *tradeType
 	o.RegisterTxState = TX_STATE_INIT
 	return &o, nil
@@ -94,6 +94,13 @@ func FindNeedSyncStateOrders(count int) ([]*CnsOrder, error) {
 		Limit(count).Error
 }
 
+func (o *CnsOrderCore) IsStable() bool {
+	if o.OrderCore.IsStable() {
+		return true
+	}
+	return o.TradeState == penums.TRADE_STATE_SUCCESSS && o.RegisterTxState.IsSuccess()
+}
+
 func UpdateOrderState(commitHash string, raw *confluxpay.ModelsOrder) error {
 	o, err := FindOrderByCommitHash(commitHash)
 	if err != nil {
@@ -106,5 +113,5 @@ func UpdateOrderState(commitHash string, raw *confluxpay.ModelsOrder) error {
 	refundState, _ := penums.ParserefundState(*raw.RefundState)
 	o.RefundState = *refundState
 
-	return models.GetDB().Save(o).Error
+	return GetDB().Save(o).Error
 }

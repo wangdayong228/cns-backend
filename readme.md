@@ -6,16 +6,17 @@
 ## TODO list
 1. [ ] Nginx https 反向代理
 2. [X] Nginx cors 中间件
-3. [ ] 数据库存中文
+3. [X] 数据库存中文
 4. [ ] 续费
 5. [X] Refresh URL
 6. [X] 下单时判断前端价格是否正确
 7. [X] 下单时事务调整
 8. [X] 根据订单到期时间，自动关闭订单(conflux-pay来做)
 9. [X] 根据流程图完善下单逻辑(现在order已存在直接返回错误，因为commithash生成成本非常低)
-10. [ ] 注册失败退款
+10. [X] 注册失败退款
 11. [X] make commit 如果已存在返回错误
 12. [ ] 处理conflux-pay 服务返回的错误
+13. [ ] 双镜注册域名、增加User
 
 INIT
 SEND_FAILED

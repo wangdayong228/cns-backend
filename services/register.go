@@ -8,6 +8,7 @@ import (
 	"github.com/wangdayong228/cns-backend/config"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
+	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
 	"gorm.io/gorm"
 )
 
@@ -96,17 +97,20 @@ func SyncRegisterStateService() {
 			if tx.IsFinalized() {
 				o.RegisterTxHash = tx.Hash
 				o.RegisterTxState = models.TxState(tx.State)
-				// refund
-				_, _, err := confluxPayClient.OrdersApi.Refund(context.Background(), o.TradeNo).Execute()
-				if err != nil {
-					logrus.WithField("order", o).WithError(err).Error("failed refund order")
-					continue
-				}
 
 				if err = models.GetDB().Save(o).Error; err != nil {
 					logrus.WithField("order", o).WithError(err).Error("failed save order")
 					continue
 				}
+
+				if o.RegisterTxState.IsSuccess() {
+					continue
+				}
+
+				// refund
+				_, _, err := confluxPayClient.OrdersApi.Refund(context.Background(), o.TradeNo).
+					RefundReq(confluxpay.ServicesRefundReq{Reason: "failed to register cns"}).Execute()
+				logrus.WithField("order", o).WithError(err).Error("refund order")
 			}
 		}
 	}
