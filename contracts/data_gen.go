@@ -41,12 +41,12 @@ func (*DataGenerator) GenCommit(args *CommitArgs) ([]byte, error) {
 	return genCommitABI.Methods["genCommitData"].Inputs.Pack(label, args.Owner, args.Duration, args.Resolver, args.Data, args.Secret, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
 }
 
-func (*DataGenerator) Register(args *CommitArgs) (string, error) {
+func (*DataGenerator) RegisterWithFiat(args *CommitArgs) (string, error) {
 	v, err := web3RegisterController.Pack("registerWithFiat", args.Name, args.Owner, args.Duration, args.Secret, args.Resolver, args.Data, args.ReverseRecord, args.Fuses, args.WrapperExpiry)
 	return utils.Bytes2Hex(v), err
 }
 
-func (*DataGenerator) Renew(name string, duration *big.Int) (string, error) {
-	v, err := web3RegisterController.Pack("renew", name, duration)
+func (*DataGenerator) RenewWithFiat(name string, duration *big.Int, fuses uint32, wrapperExpiry uint64) (string, error) {
+	v, err := web3RegisterController.Pack("renewWithFiat", name, duration, fuses, wrapperExpiry)
 	return utils.Bytes2Hex(v), err
 }

@@ -17,6 +17,7 @@
 11. [X] make commit 如果已存在返回错误
 12. [ ] 处理conflux-pay 服务返回的错误
 13. [ ] 双镜注册域名、增加User
+14. [ ] 调整routers: register/orders, renew/orders
 
 INIT
 SEND_FAILED

@@ -45,7 +45,7 @@ func RegisterService() {
 				continue
 			}
 
-			data, err := dataGen.Register(commitArgs)
+			data, err := dataGen.RegisterWithFiat(commitArgs)
 			if err != nil {
 				logrus.WithField("args", commit.CommitArgs).WithError(err).Error("failed gen register data")
 				continue

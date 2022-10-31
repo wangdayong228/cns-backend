@@ -42,9 +42,10 @@ func ConnectDB() {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&RegisterOrder{})
 	db.AutoMigrate(&Commit{})
 	db.AutoMigrate(&Transaction{})
+	db.AutoMigrate(&RegisterOrder{})
+	db.AutoMigrate(&RenewOrder{})
 }
 
 func GetDB() *gorm.DB {

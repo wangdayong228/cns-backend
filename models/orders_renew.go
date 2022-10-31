@@ -7,18 +7,29 @@ import (
 
 type RenewOrder struct {
 	BaseModel
-	OrderWithTx
-	CnsName  string `json:"cns_name" binding:"required"`
-	Duration int    `gorm:"type:varchar(255)" json:"duration" binding:"required"`
+	RenewOrderCore
 }
 
-func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder) (*RenewOrder, error) {
+type RenewOrderCore struct {
+	OrderWithTx
+	RenewOrderArgs
+}
+
+type RenewOrderArgs struct {
+	CnsName       string `json:"cns_name" binding:"required"`
+	Duration      uint   ` json:"duration" binding:"required"`
+	Fuses         uint32 `json:"fuses"`
+	WrapperExpiry uint64 `json:"wrapper_expiry" binding:"required"`
+}
+
+func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder, renewArgs *RenewOrderArgs) (*RenewOrder, error) {
 	o, err := NewOrderWithTxByPayResp(payResp)
 	if err != nil {
 		return nil, err
 	}
 	result := RenewOrder{}
 	result.OrderWithTx = *o
+	result.RenewOrderArgs = *renewArgs
 	return &result, nil
 }
 

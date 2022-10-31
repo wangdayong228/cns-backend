@@ -19,8 +19,8 @@ func MakeRenewOrder(req *MakeRenewOrderReq) (*models.RenewOrder, error) {
 }
 
 // create renew tx
-func createRenewTx(name string, duration *big.Int) (*models.Transaction, error) {
-	data, err := dataGen.Renew(name, duration)
+func createRenewTx(name string, duration *big.Int, fuses uint32, wrapperExpiry uint64) (*models.Transaction, error) {
+	data, err := dataGen.RenewWithFiat(name, duration, fuses, wrapperExpiry)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"chainID": config.RpcVal.ChainID,
@@ -72,7 +72,7 @@ func RenewService() {
 			// 	continue
 			// }
 
-			tx, err := createRenewTx(item.CnsName, big.NewInt(int64(item.Duration)))
+			tx, err := createRenewTx(item.CnsName, big.NewInt(int64(item.Duration)), item.Fuses, item.WrapperExpiry)
 			if err != nil {
 				continue
 			}

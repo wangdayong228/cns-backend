@@ -1,0 +1,517 @@
+basePath: /v1
+definitions:
+  cns_errors.RainbowErrorDetailInfo:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Commit:
+    properties:
+      commit_hash:
+        type: string
+      created_at:
+        type: string
+      data:
+        description: 32字节
+        items:
+          type: string
+        type: array
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      duration:
+        type: integer
+      fuses:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      order_state:
+        type: integer
+      owner:
+        description: base32地址或hex地址
+        type: string
+      resolver:
+        type: string
+      reverse_record:
+        type: boolean
+      secret:
+        description: 32字节
+        type: string
+      updated_at:
+        type: string
+      wrapper_expiry:
+        type: integer
+    required:
+    - commit_hash
+    type: object
+  models.CommitCore:
+    properties:
+      commit_hash:
+        type: string
+      data:
+        description: 32字节
+        items:
+          type: string
+        type: array
+      duration:
+        type: integer
+      fuses:
+        type: integer
+      name:
+        type: string
+      order_state:
+        type: integer
+      owner:
+        description: base32地址或hex地址
+        type: string
+      resolver:
+        type: string
+      reverse_record:
+        type: boolean
+      secret:
+        description: 32字节
+        type: string
+      wrapper_expiry:
+        type: integer
+    required:
+    - commit_hash
+    type: object
+  models.RegisterOrderCore:
+    properties:
+      amount:
+        description: 单位为分
+        type: integer
+      appName:
+        type: string
+      code_url:
+        type: string
+      commit_hash:
+        type: string
+      description:
+        type: string
+      h5_url:
+        type: string
+      refund_state:
+        type: string
+      time_expire:
+        type: string
+      trade_no:
+        type: string
+      trade_provider:
+        type: string
+      trade_state:
+        type: string
+      trade_type:
+        type: string
+      tx_hash:
+        type: string
+      tx_state:
+        type: integer
+    type: object
+  models.RenewOrderCore:
+    properties:
+      amount:
+        description: 单位为分
+        type: integer
+      appName:
+        type: string
+      cns_name:
+        type: string
+      code_url:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      fuses:
+        type: integer
+      h5_url:
+        type: string
+      refund_state:
+        type: string
+      time_expire:
+        type: string
+      trade_no:
+        type: string
+      trade_provider:
+        type: string
+      trade_state:
+        type: string
+      trade_type:
+        type: string
+      tx_hash:
+        type: string
+      tx_state:
+        type: integer
+      wrapper_expiry:
+        type: integer
+    required:
+    - cns_name
+    - duration
+    - wrapper_expiry
+    type: object
+  services.MakeCommitResp:
+    properties:
+      commit_hash:
+        type: string
+    type: object
+  services.MakeRegisterOrderReq:
+    properties:
+      description:
+        type: string
+      trade_provider:
+        type: string
+      trade_type:
+        type: string
+    required:
+    - description
+    - trade_type
+    type: object
+  services.MakeRegisterOrderResp:
+    properties:
+      code_url:
+        type: string
+      commit_hash:
+        type: string
+      h5_url:
+        type: string
+      trade_no:
+        type: string
+      trade_provider:
+        type: string
+      trade_type:
+        type: string
+    type: object
+  services.MakeRenewOrderReq:
+    properties:
+      cns_name:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      fuses:
+        type: integer
+      trade_provider:
+        type: string
+      trade_type:
+        type: string
+      wrapper_expiry:
+        type: integer
+    required:
+    - cns_name
+    - description
+    - duration
+    - trade_type
+    - wrapper_expiry
+    type: object
+  services.MakeRenewOrderResp:
+    properties:
+      code_url:
+        type: string
+      h5_url:
+        type: string
+      id:
+        type: integer
+      trade_no:
+        type: string
+      trade_provider:
+        type: string
+      trade_type:
+        type: string
+    type: object
+host: 127.0.0.1:8081
+info:
+  contact: {}
+  description: The responses of the open api in swagger focus on the data field rather
+    than the code and the message fields
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: CNS-BACKEND
+  version: "1.0"
+paths:
+  /commits:
+    get:
+      description: query commit
+      operationId: QueryCommit
+      parameters:
+      - in: query
+        name: order_state
+        type: string
+      - in: query
+        name: owner
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Commit'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: query commit
+      tags:
+      - Commits
+    post:
+      description: make commit for record commit detials for using when register
+      operationId: MakeCommits
+      parameters:
+      - description: make commit request
+        in: body
+        name: make_commit_req
+        required: true
+        schema:
+          $ref: '#/definitions/models.CommitCore'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeCommitResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: make commit
+      tags:
+      - Commits
+  /commits/{commit_hash}:
+    get:
+      description: get commit details by commit hash
+      operationId: GetCommit
+      parameters:
+      - description: commit hash
+        in: path
+        name: commit_hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Commit'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: get commit
+      tags:
+      - Commits
+  /registers/order/{commit_hash}:
+    get:
+      description: make register order
+      operationId: GetRegisterOrder
+      parameters:
+      - description: commit hash
+        in: path
+        name: commit_hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RegisterOrderCore'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: make register order
+      tags:
+      - Registers
+    post:
+      description: make register order
+      operationId: MakeRegisterOrder
+      parameters:
+      - description: make register order request
+        in: body
+        name: make_register_order_request
+        required: true
+        schema:
+          $ref: '#/definitions/services.MakeRegisterOrderReq'
+      - description: commit hash
+        in: path
+        name: commit_hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeRegisterOrderResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: make register order
+      tags:
+      - Registers
+  /registers/order/refresh-url/{id}:
+    put:
+      description: refresh register order url
+      operationId: RefreshRegisterOrderUrl
+      parameters:
+      - description: commit hash
+        in: path
+        name: commit_hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeRegisterOrderResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: refresh register order url
+      tags:
+      - Registers
+  /renews/order/{commit_hash}:
+    get:
+      description: make renew order
+      operationId: GetRenewOrder
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RenewOrderCore'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: make renew order
+      tags:
+      - Renews
+    post:
+      description: make renew order
+      operationId: MakeRenewOrder
+      parameters:
+      - description: make renew order request
+        in: body
+        name: make_renew_order_request
+        required: true
+        schema:
+          $ref: '#/definitions/services.MakeRenewOrderReq'
+      - description: commit hash
+        in: path
+        name: commit_hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeRenewOrderResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: make renew order
+      tags:
+      - Renews
+  /renews/order/refresh-url/{id}:
+    put:
+      description: refresh renew order url
+      operationId: RefreshRenewOrderUrl
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeRenewOrderResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: refresh renew order url
+      tags:
+      - Renews
+schemes:
+- http
+- https
+swagger: "2.0"

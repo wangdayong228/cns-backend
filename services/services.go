@@ -59,4 +59,6 @@ func StartServices() {
 	go TxService()
 	go RegisterService()
 	go SyncRegisterStateService()
+	go RenewService()
+	go SyncRenewStateService()
 }

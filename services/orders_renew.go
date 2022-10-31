@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/wangdayong228/cns-backend/models"
@@ -17,11 +18,11 @@ type MakeRenewOrderReq struct {
 	TradeProvider string           `json:"trade_provider" swaggertype:"string"`
 	TradeType     penums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
 	Description   *string          `json:"description" binding:"required"`
-	CnsName       string           `json:"cns_name" binding:"required"`
-	Duration      int              `json:"duration" binding:"required"`
+	models.RenewOrderArgs
 }
 
 type MakeRenewOrderResp struct {
+	ID int `json:"id"`
 	pservice.MakeOrderResp
 }
 
@@ -30,6 +31,9 @@ type RenewOrderService struct {
 }
 
 func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.RenewOrder, error) {
+	// 过期时间
+	expireTime := maxCommitmentAge.Int64() + time.Now().Unix()
+
 	// 获取价格
 	price, err := web3RegController.RentPriceInFiat(nil, req.CnsName, big.NewInt(int64(req.Duration)))
 	if err != nil {
@@ -52,7 +56,7 @@ func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.RenewOrde
 
 	switch *provider {
 	case penums.TRADE_PROVIDER_WECHAT:
-		wecahtOrdReq := *confluxpay.NewServicesMakeOrderReq(int32(amount.Int64()), *req.Description, int32(maxCommitmentAge.Int64()), req.TradeType.String())
+		wecahtOrdReq := *confluxpay.NewServicesMakeOrderReq(int32(amount.Int64()), *req.Description, int32(expireTime), req.TradeType.String())
 
 		var resp *http.Response
 		payOrder, resp, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).MakeOrdReq(wecahtOrdReq).Execute()
@@ -61,11 +65,12 @@ func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.RenewOrde
 			return nil, err
 		}
 		fmt.Printf("make order resp %v\n", resp)
+
 	default:
 		return nil, fmt.Errorf("unspport")
 	}
 
-	RenewOrder, err := models.NewRenewOrderByPayResp(payOrder)
+	RenewOrder, err := models.NewRenewOrderByPayResp(payOrder, &req.RenewOrderArgs)
 	if err != nil {
 		return nil, err
 	}

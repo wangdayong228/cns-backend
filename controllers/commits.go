@@ -14,6 +14,16 @@ var (
 	ErrMissingCommitHash = errors.New("missing commit hash")
 )
 
+// @Tags        Commits
+// @ID          MakeCommits
+// @Summary     make commit
+// @Description make commit for record commit detials for using when register
+// @Produce     json
+// @Param       make_commit_req body     models.CommitCore true "make commit request"
+// @Success     200             {object} services.MakeCommitResp
+// @Failure     400             {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500             {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /commits [post]
 func MakeCommits(c *gin.Context) {
 	var commitCore models.CommitCore
 	if err := c.ShouldBindJSON(&commitCore); err != nil {
@@ -28,15 +38,39 @@ func MakeCommits(c *gin.Context) {
 	ginutils.RenderRespOK(c, services.MakeCommitResp{commits.CommitHash})
 }
 
+// @Tags        Commits
+// @ID          GetCommit
+// @Summary     get commit
+// @Description get commit details by commit hash
+// @Produce     json
+// @Param       commit_hash path     string true "commit hash"
+// @Success     200         {object} models.CommitCore
+// @Failure     400         {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500         {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /commits/{commit_hash} [get]
 func GetCommit(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, ErrMissingCommitHash, cns_errors.ERR_INVALID_REQUEST_COMMON)
 	}
 	commit, err := services.GetCommit(commitHash)
-	ginutils.RenderResp(c, commit, err)
+	if err != nil {
+		ginutils.RenderRespError(c, err)
+		return
+	}
+	ginutils.RenderRespOK(c, commit.CommitCore)
 }
 
+// @Tags        Commits
+// @ID          QueryCommit
+// @Summary     query commit
+// @Description query commit
+// @Produce     json
+// @Param       query_commit_request query    services.QueryCommitsReq true "query commit request"
+// @Success     200                  {object} models.Commit
+// @Failure     400                  {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500                  {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /commits [get]
 func QueryCommits(c *gin.Context) {
 	commitReq := &services.QueryCommitsReq{}
 	if err := c.ShouldBindQuery(&commitReq); err != nil {

@@ -14,6 +14,11 @@ type RegisterOrder struct {
 	RegisterOrderCore
 }
 
+type RegisterOrderCore struct {
+	OrderWithTx
+	CommitHash string `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
+}
+
 type OrderWithTx struct {
 	pmodels.OrderCore
 	TxID    uint    `json:"-"`
@@ -26,11 +31,6 @@ func (o *OrderWithTx) IsStable() bool {
 		return true
 	}
 	return o.TradeState == penums.TRADE_STATE_SUCCESSS && o.TxState.IsSuccess()
-}
-
-type RegisterOrderCore struct {
-	OrderWithTx
-	CommitHash string `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
 }
 
 func NewOrderWithTxByPayResp(payResp *confluxpay.ModelsOrder) (*OrderWithTx, error) {
