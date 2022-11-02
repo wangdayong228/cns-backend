@@ -84,7 +84,7 @@ func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
 		ginutils.RenderRespError(c, err)
 		return
 	}
-	ginutils.RenderRespOK(c, order.RegisterOrderCore)
+	ginutils.RenderRespOK(c, order.RegisterCore)
 }
 
 // @Tags        Registers

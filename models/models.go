@@ -45,7 +45,7 @@ func ConnectDB() {
 	// Migrate the schema
 	db.AutoMigrate(&Commit{})
 	db.AutoMigrate(&Transaction{})
-	db.AutoMigrate(&RegisterOrder{})
+	db.AutoMigrate(&Register{})
 	db.AutoMigrate(&RenewOrder{})
 	db.AutoMigrate(&pmodels.Order{})
 }

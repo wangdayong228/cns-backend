@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/wangdayong228/cns-backend/models/enums"
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
 
 	pmodels "github.com/wangdayong228/conflux-pay/models"
@@ -11,12 +12,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type RegisterOrder struct {
+type Register struct {
 	BaseModel
-	RegisterOrderCore
+	RegisterCore
 }
 
-func (o *RegisterOrder) Save(db *gorm.DB) error {
+func (o *Register) Save(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		if o.Order != nil {
 			err := tx.Save(&o.Order).Error
@@ -24,32 +25,39 @@ func (o *RegisterOrder) Save(db *gorm.DB) error {
 				return err
 			}
 			o.OrderID = &o.Order.ID
+			o.OrderTradeState = &o.Order.TradeState
 		}
 		return tx.Save(o).Error
 	})
 }
 
-type RegisterOrderCore struct {
-	OrderWithTx
+type RegisterCore struct {
+	ProcessInfo
 	CommitHash string `gorm:"type:varchar(255);uniqueIndex" json:"commit_hash"`
 }
 
-type OrderWithTx struct {
-	*pmodels.Order `gorm:"-"`
-	OrderID        *uint
-	TxID           uint    `json:"-"`
-	TxHash         string  `gorm:"type:varchar(255)" json:"tx_hash"`
-	TxState        TxState `gorm:"type:varchar(255)" json:"tx_state"`
+type ProcessInfo struct {
+	*pmodels.Order  `gorm:"-"`
+	OrderID         *uint
+	OrderTradeState *penums.TradeState
+	TxID            uint    `json:"-"`
+	TxHash          string  `gorm:"type:varchar(255)" json:"tx_hash"`
+	TxState         TxState `gorm:"type:varchar(255)" json:"tx_state"`
+	UserID          uint
+	UserPermission  enums.UserPermission
 }
 
-func (o *OrderWithTx) IsStable() bool {
+func (o *ProcessInfo) IsStable() bool {
+	if o == nil {
+		return true
+	}
 	if o.OrderCore.IsStable() {
 		return true
 	}
 	return o.TradeState == penums.TRADE_STATE_SUCCESSS && o.TxState.IsSuccess()
 }
 
-func NewOrderWithTxByPayResp(payResp *confluxpay.ModelsOrder) (*OrderWithTx, error) {
+func NewOrderWithTxByPayResp(payResp *confluxpay.ModelsOrder) (*ProcessInfo, error) {
 	tv, err := time.Parse("2006-01-02T15:04:05+08:00", *payResp.TimeExpire)
 	if err != nil {
 		return nil, err
@@ -64,7 +72,7 @@ func NewOrderWithTxByPayResp(payResp *confluxpay.ModelsOrder) (*OrderWithTx, err
 		return nil, errors.New("unkown trade type or trade provider or trade state or refund state")
 	}
 
-	o := OrderWithTx{}
+	o := ProcessInfo{}
 	o.Order = &pmodels.Order{}
 	o.Amount = uint(*payResp.Amount)
 	o.AppName = *payResp.AppName
@@ -81,13 +89,13 @@ func NewOrderWithTxByPayResp(payResp *confluxpay.ModelsOrder) (*OrderWithTx, err
 	return &o, nil
 }
 
-func NewRegOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*RegisterOrder, error) {
+func NewRegOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*Register, error) {
 	o, err := NewOrderWithTxByPayResp(payResp)
 	if err != nil {
 		return nil, err
 	}
-	regOrder := RegisterOrder{}
-	regOrder.OrderWithTx = *o
+	regOrder := Register{}
+	regOrder.ProcessInfo = *o
 	regOrder.CommitHash = commitHash
 	return &regOrder, nil
 }
@@ -95,25 +103,25 @@ func NewRegOrderByPayResp(payResp *confluxpay.ModelsOrder, commitHash string) (*
 type RegisterOrderOperater struct {
 }
 
-func (*RegisterOrderOperater) FindRegOrderByCommitHash(commitHash string) (*RegisterOrder, error) {
-	o := RegisterOrder{}
+func (*RegisterOrderOperater) FindRegOrderByCommitHash(commitHash string) (*Register, error) {
+	o := Register{}
 	o.CommitHash = commitHash
 	if err := GetDB().Where(&o).First(&o).Error; err != nil {
 		return nil, err
 	}
 
-	if err := CompleteRegisterOrders([]*RegisterOrder{&o}); err != nil {
+	if err := CompleteRegisterOrders([]*Register{&o}); err != nil {
 		return nil, err
 	}
 
 	return &o, nil
 }
 
-func (*RegisterOrderOperater) FindNeedRegiterOrders(startID uint) ([]*RegisterOrder, error) {
-	o := RegisterOrder{}
+func (*RegisterOrderOperater) FindNeedRegiterOrders(startID uint) ([]*Register, error) {
+	o := Register{}
 	// o.TradeState = penums.TRADE_STATE_SUCCESSS
 
-	var orders []*RegisterOrder
+	var orders []*Register
 	if err := GetDB().Where("id > ? and tx_id = ?", startID, 0).Where(&o).Find(&orders).Error; err != nil {
 		return nil, err
 	}
@@ -128,8 +136,8 @@ func (*RegisterOrderOperater) FindNeedRegiterOrders(startID uint) ([]*RegisterOr
 	return orders, nil
 }
 
-func (*RegisterOrderOperater) FindNeedSyncStateRegOrders(count int) ([]*RegisterOrder, error) {
-	var orders []*RegisterOrder
+func (*RegisterOrderOperater) FindNeedSyncStateRegOrders(count int) ([]*Register, error) {
+	var orders []*Register
 	if err := GetDB().
 		Not("tx_id = ?", 0).
 		Where("tx_state = ?", TX_STATE_INIT).
@@ -162,7 +170,7 @@ func (r *RegisterOrderOperater) UpdateRegOrderState(commitHash string, raw *conf
 }
 
 // TODO: 用泛型代替
-func CompleteRegisterOrders(regOrders []*RegisterOrder) error {
+func CompleteRegisterOrders(regOrders []*Register) error {
 	// find orders
 	var ids []uint
 	for _, o := range regOrders {
@@ -191,8 +199,8 @@ func CompleteRegisterOrders(regOrders []*RegisterOrder) error {
 	return nil
 }
 
-func FilterRegisterOrdersByTxState(regOrders []*RegisterOrder, tradeState penums.TradeState) []*RegisterOrder {
-	var result []*RegisterOrder
+func FilterRegisterOrdersByTxState(regOrders []*Register, tradeState penums.TradeState) []*Register {
+	var result []*Register
 	for _, o := range regOrders {
 		if o.Order != nil && o.Order.TradeState == tradeState {
 			result = append(result, o)

@@ -32,7 +32,7 @@ type RegisterOrderService struct {
 	modelOperator models.RegisterOrderOperater
 }
 
-func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.RegisterOrder, error) {
+func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash common.Hash) (*models.Register, error) {
 	//  verify
 	order, err := r.modelOperator.FindRegOrderByCommitHash(commitHash.Hex())
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -137,7 +137,7 @@ func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash c
 	return RegisterOrder, nil
 }
 
-func (r *RegisterOrderService) GetOrder(commitHash string) (*models.RegisterOrder, error) {
+func (r *RegisterOrderService) GetOrder(commitHash string) (*models.Register, error) {
 	o, err := r.modelOperator.FindRegOrderByCommitHash(commitHash)
 	if err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func (r *RegisterOrderService) GetOrder(commitHash string) (*models.RegisterOrde
 	return o, nil
 }
 
-func (r *RegisterOrderService) RefreshURL(commitHash string) (*models.RegisterOrder, error) {
+func (r *RegisterOrderService) RefreshURL(commitHash string) (*models.Register, error) {
 	o, err := r.GetOrder(commitHash)
 	if err != nil {
 		return nil, err

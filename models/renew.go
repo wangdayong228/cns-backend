@@ -26,7 +26,7 @@ func (o *RenewOrder) Save(db *gorm.DB) error {
 }
 
 type RenewOrderCore struct {
-	OrderWithTx
+	ProcessInfo
 	RenewOrderArgs
 }
 
@@ -43,7 +43,7 @@ func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder, renewArgs *RenewOrd
 		return nil, err
 	}
 	result := RenewOrder{}
-	result.OrderWithTx = *o
+	result.ProcessInfo = *o
 	result.RenewOrderArgs = *renewArgs
 	return &result, nil
 }
