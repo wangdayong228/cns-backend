@@ -1,59 +1,11 @@
-basePath: /v1
+basePath: /v0
 definitions:
-  cns_errors.RainbowErrorDetailInfo:
+  cns_errors.CnsErrorDetailInfo:
     properties:
       code:
         type: integer
       message:
         type: string
-    type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
-    type: object
-  models.Commit:
-    properties:
-      commit_hash:
-        type: string
-      created_at:
-        type: string
-      data:
-        description: 32字节
-        items:
-          type: string
-        type: array
-      deleted_at:
-        $ref: '#/definitions/gorm.DeletedAt'
-      duration:
-        type: integer
-      fuses:
-        type: integer
-      id:
-        type: integer
-      name:
-        type: string
-      order_state:
-        type: integer
-      owner:
-        description: base32地址或hex地址
-        type: string
-      resolver:
-        type: string
-      reverse_record:
-        type: boolean
-      secret:
-        description: 32字节
-        type: string
-      updated_at:
-        type: string
-      wrapper_expiry:
-        type: integer
-    required:
-    - commit_hash
     type: object
   models.CommitCore:
     properties:
@@ -231,7 +183,7 @@ definitions:
       trade_type:
         type: string
     type: object
-host: 127.0.0.1:8081
+host: 101.42.88.184
 info:
   contact: {}
   description: The responses of the open api in swagger focus on the data field rather
@@ -240,7 +192,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: CNS-BACKEND
-  version: "1.0"
+  version: "0.1"
 paths:
   /commits:
     get:
@@ -265,15 +217,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Commit'
+            items:
+              $ref: '#/definitions/models.CommitCore'
+            type: array
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: query commit
       tags:
       - Commits
@@ -297,11 +251,11 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: make commit
       tags:
       - Commits
@@ -321,21 +275,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Commit'
+            $ref: '#/definitions/models.CommitCore'
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: get commit
       tags:
       - Commits
   /registers/order/{commit_hash}:
     get:
-      description: make register order
+      description: get register order
       operationId: GetRegisterOrder
       parameters:
       - description: commit hash
@@ -353,12 +307,12 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
-      summary: make register order
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
+      summary: get register order
       tags:
       - Registers
     post:
@@ -386,15 +340,15 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: make register order
       tags:
       - Registers
-  /registers/order/refresh-url/{id}:
+  /registers/order/refresh-url/{commit_hash}:
     put:
       description: refresh register order url
       operationId: RefreshRegisterOrderUrl
@@ -414,42 +368,15 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: refresh register order url
       tags:
       - Registers
-  /renews/order/{commit_hash}:
-    get:
-      description: make renew order
-      operationId: GetRenewOrder
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: number
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.RenewOrderCore'
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
-        "500":
-          description: Internal Server error
-          schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
-      summary: make renew order
-      tags:
-      - Renews
+  /renews/order:
     post:
       description: make renew order
       operationId: MakeRenewOrder
@@ -475,12 +402,40 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: make renew order
+      tags:
+      - Renews
+  /renews/order/{id}:
+    get:
+      description: get renew order
+      operationId: GetRenewOrder
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RenewOrderCore'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
+      summary: get renew order
       tags:
       - Renews
   /renews/order/refresh-url/{id}:
@@ -503,11 +458,11 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
         "500":
           description: Internal Server error
           schema:
-            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+            $ref: '#/definitions/cns_errors.CnsErrorDetailInfo'
       summary: refresh renew order url
       tags:
       - Renews

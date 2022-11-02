@@ -36,14 +36,14 @@ func initGin() *gin.Engine {
 // }
 
 // @title       CNS-BACKEND
-// @version     1.0
+// @version     0.1
 // @description The responses of the open api in swagger focus on the data field rather than the code and the message fields
 
 // @license.name Apache 2.0
 // @license.url  http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host     127.0.0.1:8081
-// @BasePath /v1
+// @host     101.42.88.184
+// @BasePath /v0
 // @schemes  http https
 func main() {
 	config.Init()

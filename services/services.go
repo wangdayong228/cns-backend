@@ -57,8 +57,8 @@ func initConfluxPay() {
 
 func StartServices() {
 	go TxService()
-	go RegisterService()
-	go SyncRegisterStateService()
+	go LoopSendRegisterTx()
+	go LoopSyncRegisterState()
 	go RenewService()
 	go SyncRenewStateService()
 }

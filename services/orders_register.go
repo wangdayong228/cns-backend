@@ -123,7 +123,7 @@ func (r *RegisterOrderService) MakeOrder(req *MakeRegisterOrderReq, commitHash c
 			return err
 		}
 
-		if err := tx.Save(RegisterOrder).Error; err != nil {
+		if err := RegisterOrder.Save(tx); err != nil {
 			return err
 		}
 
@@ -173,5 +173,10 @@ func (r *RegisterOrderService) RefreshURL(commitHash string) (*models.RegisterOr
 
 	o.CodeUrl = resp.CodeUrl
 	o.H5Url = resp.H5Url
+
+	if err := o.Save(models.GetDB()); err != nil {
+		return nil, err
+	}
+
 	return o, nil
 }

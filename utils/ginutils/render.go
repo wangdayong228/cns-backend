@@ -40,12 +40,12 @@ func RenderRespOK(c *gin.Context, data interface{}, httpStatusCode ...int) {
 
 // rainbowErrorCode 有值时，message 为 err message，如果 err 为 rainbow error, 则 status code 与 code 都来自 err, 否则来自rainbowErrorCode
 // 否则 message 为 err message，status code 与 code 为 ERR_INTERNAL_SERVER_COMMON
-func RenderRespError(c *gin.Context, err error, rainbowErrorCode ...rainbow_errors.RainbowError) {
+func RenderRespError(c *gin.Context, err error, rainbowErrorCode ...rainbow_errors.CnsError) {
 	// logrus.WithField("error_stack", string(debug.Stack())).WithField("err", err).Info("render error")
 	c.Error(err)
 	c.Set("error_stack", string(debug.Stack()))
 
-	if re, ok := err.(rainbow_errors.RainbowError); ok {
+	if re, ok := err.(rainbow_errors.CnsError); ok {
 		re.RenderJSON(c)
 		return
 	}

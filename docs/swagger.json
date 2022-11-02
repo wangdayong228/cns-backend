@@ -12,10 +12,10 @@
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "version": "1.0"
+        "version": "0.1"
     },
-    "host": "127.0.0.1:8081",
-    "basePath": "/v1",
+    "host": "101.42.88.184",
+    "basePath": "/v0",
     "paths": {
         "/commits": {
             "get": {
@@ -54,19 +54,22 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Commit"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CommitCore"
+                            }
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -102,13 +105,13 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -138,25 +141,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Commit"
+                            "$ref": "#/definitions/models.CommitCore"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
             }
         },
-        "/registers/order/refresh-url/{id}": {
+        "/registers/order/refresh-url/{commit_hash}": {
             "put": {
                 "description": "refresh register order url",
                 "produces": [
@@ -186,13 +189,13 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -200,14 +203,14 @@
         },
         "/registers/order/{commit_hash}": {
             "get": {
-                "description": "make register order",
+                "description": "get register order",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Registers"
                 ],
-                "summary": "make register order",
+                "summary": "get register order",
                 "operationId": "GetRegisterOrder",
                 "parameters": [
                     {
@@ -228,13 +231,13 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -277,101 +280,19 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
             }
         },
-        "/renews/order/refresh-url/{id}": {
-            "put": {
-                "description": "refresh renew order url",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Renews"
-                ],
-                "summary": "refresh renew order url",
-                "operationId": "RefreshRenewOrderUrl",
-                "parameters": [
-                    {
-                        "type": "number",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/services.MakeRenewOrderResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server error",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    }
-                }
-            }
-        },
-        "/renews/order/{commit_hash}": {
-            "get": {
-                "description": "make renew order",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Renews"
-                ],
-                "summary": "make renew order",
-                "operationId": "GetRenewOrder",
-                "parameters": [
-                    {
-                        "type": "number",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.RenewOrderCore"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server error",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    }
-                }
-            },
+        "/renews/order": {
             "post": {
                 "description": "make renew order",
                 "produces": [
@@ -410,13 +331,97 @@
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/renews/order/refresh-url/{id}": {
+            "put": {
+                "description": "refresh renew order url",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Renews"
+                ],
+                "summary": "refresh renew order url",
+                "operationId": "RefreshRenewOrderUrl",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/services.MakeRenewOrderResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/renews/order/{id}": {
+            "get": {
+                "description": "get renew order",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Renews"
+                ],
+                "summary": "get renew order",
+                "operationId": "GetRenewOrder",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RenewOrderCore"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -424,7 +429,7 @@
         }
     },
     "definitions": {
-        "cns_errors.RainbowErrorDetailInfo": {
+        "cns_errors.CnsErrorDetailInfo": {
             "type": "object",
             "properties": {
                 "code": {
@@ -432,77 +437,6 @@
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "models.Commit": {
-            "type": "object",
-            "required": [
-                "commit_hash"
-            ],
-            "properties": {
-                "commit_hash": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "data": {
-                    "description": "32字节",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "duration": {
-                    "type": "integer"
-                },
-                "fuses": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "order_state": {
-                    "type": "integer"
-                },
-                "owner": {
-                    "description": "base32地址或hex地址",
-                    "type": "string"
-                },
-                "resolver": {
-                    "type": "string"
-                },
-                "reverse_record": {
-                    "type": "boolean"
-                },
-                "secret": {
-                    "description": "32字节",
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "wrapper_expiry": {
-                    "type": "integer"
                 }
             }
         },

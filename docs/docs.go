@@ -57,19 +57,22 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Commit"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CommitCore"
+                            }
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -105,13 +108,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -141,25 +144,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Commit"
+                            "$ref": "#/definitions/models.CommitCore"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
             }
         },
-        "/registers/order/refresh-url/{id}": {
+        "/registers/order/refresh-url/{commit_hash}": {
             "put": {
                 "description": "refresh register order url",
                 "produces": [
@@ -189,13 +192,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -203,14 +206,14 @@ const docTemplate = `{
         },
         "/registers/order/{commit_hash}": {
             "get": {
-                "description": "make register order",
+                "description": "get register order",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Registers"
                 ],
-                "summary": "make register order",
+                "summary": "get register order",
                 "operationId": "GetRegisterOrder",
                 "parameters": [
                     {
@@ -231,13 +234,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -280,101 +283,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
             }
         },
-        "/renews/order/refresh-url/{id}": {
-            "put": {
-                "description": "refresh renew order url",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Renews"
-                ],
-                "summary": "refresh renew order url",
-                "operationId": "RefreshRenewOrderUrl",
-                "parameters": [
-                    {
-                        "type": "number",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/services.MakeRenewOrderResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server error",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    }
-                }
-            }
-        },
-        "/renews/order/{commit_hash}": {
-            "get": {
-                "description": "make renew order",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Renews"
-                ],
-                "summary": "make renew order",
-                "operationId": "GetRenewOrder",
-                "parameters": [
-                    {
-                        "type": "number",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.RenewOrderCore"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server error",
-                        "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
-                        }
-                    }
-                }
-            },
+        "/renews/order": {
             "post": {
                 "description": "make renew order",
                 "produces": [
@@ -413,13 +334,97 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server error",
                         "schema": {
-                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/renews/order/refresh-url/{id}": {
+            "put": {
+                "description": "refresh renew order url",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Renews"
+                ],
+                "summary": "refresh renew order url",
+                "operationId": "RefreshRenewOrderUrl",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/services.MakeRenewOrderResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/renews/order/{id}": {
+            "get": {
+                "description": "get renew order",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Renews"
+                ],
+                "summary": "get renew order",
+                "operationId": "GetRenewOrder",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RenewOrderCore"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.CnsErrorDetailInfo"
                         }
                     }
                 }
@@ -427,7 +432,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "cns_errors.RainbowErrorDetailInfo": {
+        "cns_errors.CnsErrorDetailInfo": {
             "type": "object",
             "properties": {
                 "code": {
@@ -435,77 +440,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "models.Commit": {
-            "type": "object",
-            "required": [
-                "commit_hash"
-            ],
-            "properties": {
-                "commit_hash": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "data": {
-                    "description": "32字节",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "duration": {
-                    "type": "integer"
-                },
-                "fuses": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "order_state": {
-                    "type": "integer"
-                },
-                "owner": {
-                    "description": "base32地址或hex地址",
-                    "type": "string"
-                },
-                "resolver": {
-                    "type": "string"
-                },
-                "reverse_record": {
-                    "type": "boolean"
-                },
-                "secret": {
-                    "description": "32字节",
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "wrapper_expiry": {
-                    "type": "integer"
                 }
             }
         },
@@ -776,9 +710,9 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "127.0.0.1:8081",
-	BasePath:         "/v1",
+	Version:          "0.1",
+	Host:             "101.42.88.184",
+	BasePath:         "/v0",
 	Schemes:          []string{"http", "https"},
 	Title:            "CNS-BACKEND",
 	Description:      "The responses of the open api in swagger focus on the data field rather than the code and the message fields",

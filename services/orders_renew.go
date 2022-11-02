@@ -75,7 +75,7 @@ func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.RenewOrde
 		return nil, err
 	}
 
-	if err := models.GetDB().Save(RenewOrder).Error; err != nil {
+	if err := RenewOrder.Save(models.GetDB()); err != nil {
 		return nil, err
 	}
 
@@ -118,5 +118,10 @@ func (r *RenewOrderService) RefreshURL(id int) (*models.RenewOrder, error) {
 
 	o.CodeUrl = resp.CodeUrl
 	o.H5Url = resp.H5Url
+
+	if err := o.Save(models.GetDB()); err != nil {
+		return nil, err
+	}
+
 	return o, nil
 }

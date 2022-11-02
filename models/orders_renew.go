@@ -2,12 +2,27 @@ package models
 
 import (
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
+	pmodels "github.com/wangdayong228/conflux-pay/models"
 	penums "github.com/wangdayong228/conflux-pay/models/enums"
+	"gorm.io/gorm"
 )
 
 type RenewOrder struct {
 	BaseModel
 	RenewOrderCore
+}
+
+func (o *RenewOrder) Save(db *gorm.DB) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if o.Order != nil {
+			err := tx.Save(&o.Order).Error
+			if err != nil {
+				return err
+			}
+			o.OrderID = &o.Order.ID
+		}
+		return tx.Save(o).Error
+	})
 }
 
 type RenewOrderCore struct {
@@ -41,16 +56,31 @@ func (*RenewOrderOperater) FindOrderById(id int) (*RenewOrder, error) {
 	if err := GetDB().Where(id).First(&o).Error; err != nil {
 		return nil, err
 	}
+
+	if err := CompleteRenewOrders([]*RenewOrder{&o}); err != nil {
+		return nil, err
+	}
+
 	return &o, nil
 }
 
 func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, error) {
 	o := RenewOrder{}
-	o.TradeState = penums.TRADE_STATE_SUCCESSS
-	o.TxID = 0
+	// o.TradeState = penums.TRADE_STATE_SUCCESSS
+	// o.TxID = 0
 
 	var orders []*RenewOrder
-	return orders, GetDB().Where("id > ? and tx_id = ?", startID, 0).Where(&o).Find(&orders).Error
+	if err := GetDB().Where("id > ? and tx_id = ?", startID, 0).Where(&o).Find(&orders).Error; err != nil {
+		return nil, err
+	}
+
+	if err := CompleteRenewOrders(orders); err != nil {
+		return nil, err
+	}
+
+	orders = FilterRenewOrdersByTxState(orders, penums.TRADE_STATE_SUCCESSS)
+
+	return orders, nil
 }
 
 // TX_STATE_SEND_FAILED_RETRY_UPPER_GAS TxState = iota - 4 // -4
@@ -64,11 +94,19 @@ func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, erro
 // TX_STATE_CONFIRMED
 func (*RenewOrderOperater) FindNeedSyncStateOrders(count int) ([]*RenewOrder, error) {
 	var orders []*RenewOrder
-	return orders, GetDB().
+	if err := GetDB().
 		Not("tx_id = ?", 0).
 		Where("tx_state = ?", TX_STATE_INIT).
 		Find(&orders).
-		Limit(count).Error
+		Limit(count).Error; err != nil {
+		return nil, err
+	}
+
+	if err := CompleteRenewOrders(orders); err != nil {
+		return nil, err
+	}
+
+	return orders, nil
 }
 
 func (r *RenewOrderOperater) UpdateOrderState(id int, raw *confluxpay.ModelsOrder) error {
@@ -83,5 +121,45 @@ func (r *RenewOrderOperater) UpdateOrderState(id int, raw *confluxpay.ModelsOrde
 	refundState, _ := penums.ParserefundState(*raw.RefundState)
 	o.RefundState = *refundState
 
-	return GetDB().Save(o).Error
+	return o.Save(GetDB())
+}
+
+// TODO: 用泛型代替
+func CompleteRenewOrders(regOrders []*RenewOrder) error {
+	// find orders
+	var ids []uint
+	for _, o := range regOrders {
+		if o.OrderID != nil {
+			ids = append(ids, *o.OrderID)
+		}
+	}
+
+	var orders []*pmodels.Order
+	if err := GetDB().Find(&orders, ids).Error; err != nil {
+		return nil
+	}
+
+	// map orders
+	var ordersCache map[uint]*pmodels.Order = make(map[uint]*pmodels.Order)
+	for _, o := range orders {
+		ordersCache[o.ID] = o
+	}
+
+	for _, ro := range regOrders {
+		if ro.OrderID != nil {
+			ro.Order = ordersCache[*ro.OrderID]
+		}
+	}
+
+	return nil
+}
+
+func FilterRenewOrdersByTxState(renewOrders []*RenewOrder, tradeState penums.TradeState) []*RenewOrder {
+	var result []*RenewOrder
+	for _, o := range renewOrders {
+		if o.Order != nil && o.Order.TradeState == tradeState {
+			result = append(result, o)
+		}
+	}
+	return result
 }

@@ -25,18 +25,27 @@ func SetupRoutes(router *gin.Engine) {
 			commit.GET("/", controllers.QueryCommits)
 		}
 
-		regOrders := api.Group("registers/order")
+		reg := api.Group("registers")
 		{
-			regOrders.POST("/:commit_hash", regOrderCtrl.MakeOrder)
-			regOrders.GET("/:commit_hash", regOrderCtrl.GetOrder)
-			regOrders.PUT("/refresh-url/:commit_hash", regOrderCtrl.RefreshURL)
+			reg.POST("/", nil)
+			reg.GET("/", nil)
+			regOrders := reg.Group("order")
+			{
+				regOrders.POST("/:commit_hash", regOrderCtrl.MakeOrder)
+				regOrders.GET("/:commit_hash", regOrderCtrl.GetOrder)
+				regOrders.PUT("/refresh-url/:commit_hash", regOrderCtrl.RefreshURL)
+			}
 		}
 
-		renewOrders := api.Group("renews/order")
+		renew := api.Group("renews")
 		{
-			renewOrders.POST("/", renewOrderCtrl.MakeOrder)
-			renewOrders.GET("/:id", renewOrderCtrl.GetOrder)
-			renewOrders.PUT("/refresh-url/:id", renewOrderCtrl.RefreshURL)
+			renew.POST("/", nil)
+			renewOrders := renew.Group("order")
+			{
+				renewOrders.POST("/", renewOrderCtrl.MakeOrder)
+				renewOrders.GET("/:id", renewOrderCtrl.GetOrder)
+				renewOrders.PUT("/refresh-url/:id", renewOrderCtrl.RefreshURL)
+			}
 		}
 
 	}

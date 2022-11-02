@@ -21,8 +21,8 @@ var (
 // @Produce     json
 // @Param       make_commit_req body     models.CommitCore true "make commit request"
 // @Success     200             {object} services.MakeCommitResp
-// @Failure     400             {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500             {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Failure     400             {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500             {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /commits [post]
 func MakeCommits(c *gin.Context) {
 	var commitCore models.CommitCore
@@ -45,8 +45,8 @@ func MakeCommits(c *gin.Context) {
 // @Produce     json
 // @Param       commit_hash path     string true "commit hash"
 // @Success     200         {object} models.CommitCore
-// @Failure     400         {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500         {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Failure     400         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /commits/{commit_hash} [get]
 func GetCommit(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
@@ -67,9 +67,9 @@ func GetCommit(c *gin.Context) {
 // @Description query commit
 // @Produce     json
 // @Param       query_commit_request query    services.QueryCommitsReq true "query commit request"
-// @Success     200                  {object} models.Commit
-// @Failure     400                  {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500                  {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Success     200                  {array}  models.CommitCore
+// @Failure     400                  {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500                  {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /commits [get]
 func QueryCommits(c *gin.Context) {
 	commitReq := &services.QueryCommitsReq{}

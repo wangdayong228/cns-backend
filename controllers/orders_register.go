@@ -27,8 +27,8 @@ func NewRegisterOrderCtrl() *RegisterOrderCtrl {
 // @Param       make_register_order_request body     services.MakeRegisterOrderReq true "make register order request"
 // @Param       commit_hash                 path     string                        true "commit hash"
 // @Success     200                         {object} services.MakeRegisterOrderResp
-// @Failure     400                         {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500                         {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Failure     400                         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500                         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /registers/order/{commit_hash} [post]
 func (r *RegisterOrderCtrl) MakeOrder(c *gin.Context) {
 	var req services.MakeRegisterOrderReq
@@ -70,8 +70,8 @@ func (r *RegisterOrderCtrl) MakeOrder(c *gin.Context) {
 // @Produce     json
 // @Param       commit_hash path     string true "commit hash"
 // @Success     200         {object} models.RegisterOrderCore
-// @Failure     400         {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500         {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Failure     400         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /registers/order/{commit_hash} [get]
 func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
@@ -94,9 +94,9 @@ func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
 // @Produce     json
 // @Param       commit_hash path     string true "commit hash"
 // @Success     200         {object} services.MakeRegisterOrderResp
-// @Failure     400         {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500         {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /registers/order/refresh-url/{id} [put]
+// @Failure     400         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
+// @Router      /registers/order/refresh-url/{commit_hash} [put]
 func (r *RegisterOrderCtrl) RefreshURL(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {

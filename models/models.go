@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	pmodels "github.com/wangdayong228/conflux-pay/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -46,6 +47,7 @@ func ConnectDB() {
 	db.AutoMigrate(&Transaction{})
 	db.AutoMigrate(&RegisterOrder{})
 	db.AutoMigrate(&RenewOrder{})
+	db.AutoMigrate(&pmodels.Order{})
 }
 
 func GetDB() *gorm.DB {

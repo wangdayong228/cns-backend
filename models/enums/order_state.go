@@ -16,7 +16,7 @@ var (
 )
 
 var (
-	ErrUnkownTradeType = errors.New("unknown trade type")
+	ErrUnkownOrderState = errors.New("unknown order state")
 )
 
 func init() {

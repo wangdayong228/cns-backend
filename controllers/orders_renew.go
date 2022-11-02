@@ -27,9 +27,9 @@ func NewRenewOrderCtrl() *RenewOrderCtrl {
 // @Param       make_renew_order_request body     services.MakeRenewOrderReq true "make renew order request"
 // @Param       commit_hash              path     string                     true "commit hash"
 // @Success     200                      {object} services.MakeRenewOrderResp
-// @Failure     400                      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500                      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /renews/order/{commit_hash} [post]
+// @Failure     400                      {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500                      {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
+// @Router      /renews/order [post]
 func (r *RenewOrderCtrl) MakeOrder(c *gin.Context) {
 	var req services.MakeRenewOrderReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -64,9 +64,9 @@ func (r *RenewOrderCtrl) MakeOrder(c *gin.Context) {
 // @Produce     json
 // @Param       id  path     number true "id"
 // @Success     200 {object} models.RenewOrderCore
-// @Failure     400 {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500 {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /renews/order/{commit_hash} [get]
+// @Failure     400 {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500 {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
+// @Router      /renews/order/{id} [get]
 func (r *RenewOrderCtrl) GetOrder(c *gin.Context) {
 	id, err := getParamId(c)
 	if err != nil {
@@ -89,8 +89,8 @@ func (r *RenewOrderCtrl) GetOrder(c *gin.Context) {
 // @Produce     json
 // @Param       id  path     number true "id"
 // @Success     200 {object} services.MakeRenewOrderResp
-// @Failure     400 {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500 {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Failure     400 {object} cns_errors.CnsErrorDetailInfo "Invalid request"
+// @Failure     500 {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /renews/order/refresh-url/{id} [put]
 func (r *RenewOrderCtrl) RefreshURL(c *gin.Context) {
 	id, err := getParamId(c)

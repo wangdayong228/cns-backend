@@ -17,7 +17,14 @@ var (
 	regOrderOperator     = models.RegisterOrderOperater{}
 )
 
-func RegisterService() {
+// 双镜等有注册权限的用户才可以调用
+// make commit
+// make order
+func RegisterByAdmin(req *models.CommitCore) {
+
+}
+
+func LoopSendRegisterTx() {
 	from := config.CnsContractVal.Admin
 	to := config.CnsContractVal.Register
 
@@ -70,7 +77,7 @@ func RegisterService() {
 }
 
 // TODO: implement
-func SyncRegisterStateService() {
+func LoopSyncRegisterState() {
 	for {
 		time.Sleep(time.Second * 5)
 		// 1. find records has RegisterTxID and state is UnCompleted
