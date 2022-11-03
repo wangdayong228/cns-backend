@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	regOrderCtrl   = controllers.NewRegisterOrderCtrl()
-	renewOrderCtrl = controllers.NewRenewOrderCtrl()
+	regCtrl   = controllers.NewRegisterCtrl()
+	renewCtrl = controllers.NewRenewCtrl()
 )
 
 func SetupRoutes(router *gin.Engine) {
@@ -27,13 +27,13 @@ func SetupRoutes(router *gin.Engine) {
 
 		reg := api.Group("registers")
 		{
-			reg.POST("/", nil)
+			reg.POST("/", regCtrl.RegisterByAdmin)
 			reg.GET("/", nil)
 			regOrders := reg.Group("order")
 			{
-				regOrders.POST("/:commit_hash", regOrderCtrl.MakeOrder)
-				regOrders.GET("/:commit_hash", regOrderCtrl.GetOrder)
-				regOrders.PUT("/refresh-url/:commit_hash", regOrderCtrl.RefreshURL)
+				regOrders.POST("/:commit_hash", regCtrl.MakeOrder)
+				regOrders.GET("/:commit_hash", regCtrl.GetOrder)
+				regOrders.PUT("/refresh-url/:commit_hash", regCtrl.RefreshURL)
 			}
 		}
 
@@ -42,9 +42,9 @@ func SetupRoutes(router *gin.Engine) {
 			renew.POST("/", nil)
 			renewOrders := renew.Group("order")
 			{
-				renewOrders.POST("/", renewOrderCtrl.MakeOrder)
-				renewOrders.GET("/:id", renewOrderCtrl.GetOrder)
-				renewOrders.PUT("/refresh-url/:id", renewOrderCtrl.RefreshURL)
+				renewOrders.POST("/", renewCtrl.MakeOrder)
+				renewOrders.GET("/:id", renewCtrl.GetOrder)
+				renewOrders.PUT("/refresh-url/:id", renewCtrl.RefreshURL)
 			}
 		}
 

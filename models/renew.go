@@ -70,7 +70,9 @@ func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, erro
 	// o.TxID = 0
 
 	var orders []*RenewOrder
-	if err := GetDB().Where("id > ? and tx_id = ?", startID, 0).Where(&o).Find(&orders).Error; err != nil {
+	if err := GetDB().
+		Where(" tx_id = ? and ( order_trade_state = ? or user_permission > ?)", 0, penums.TRADE_STATE_SUCCESSS, 0).
+		Where(&o).Find(&orders).Error; err != nil {
 		return nil, err
 	}
 
@@ -78,7 +80,7 @@ func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, erro
 		return nil, err
 	}
 
-	orders = FilterRenewOrdersByTxState(orders, penums.TRADE_STATE_SUCCESSS)
+	// orders = FilterRenewOrdersByTxState(orders, penums.TRADE_STATE_SUCCESSS)
 
 	return orders, nil
 }
@@ -154,12 +156,12 @@ func CompleteRenewOrders(regOrders []*RenewOrder) error {
 	return nil
 }
 
-func FilterRenewOrdersByTxState(renewOrders []*RenewOrder, tradeState penums.TradeState) []*RenewOrder {
-	var result []*RenewOrder
-	for _, o := range renewOrders {
-		if o.Order != nil && o.Order.TradeState == tradeState {
-			result = append(result, o)
-		}
-	}
-	return result
-}
+// func FilterRenewOrdersByTxState(renewOrders []*RenewOrder, tradeState penums.TradeState) []*RenewOrder {
+// 	var result []*RenewOrder
+// 	for _, o := range renewOrders {
+// 		if o.Order != nil && o.Order.TradeState == tradeState {
+// 			result = append(result, o)
+// 		}
+// 	}
+// 	return result
+// }

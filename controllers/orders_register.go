@@ -6,17 +6,35 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/wangdayong228/cns-backend/cns_errors"
+	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/services"
 	"github.com/wangdayong228/cns-backend/utils/ginutils"
 	pservice "github.com/wangdayong228/conflux-pay/services"
 )
 
-type RegisterOrderCtrl struct {
-	regOrderSev *services.RegisterOrderService
+type RegisterCtrl struct {
+	regOrderSev *services.RegisterService
 }
 
-func NewRegisterOrderCtrl() *RegisterOrderCtrl {
-	return &RegisterOrderCtrl{&services.RegisterOrderService{}}
+func NewRegisterCtrl() *RegisterCtrl {
+	return &RegisterCtrl{&services.RegisterService{}}
+}
+
+func (r *RegisterCtrl) RegisterByAdmin(c *gin.Context) {
+	var req models.CommitCore
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
+		return
+	}
+	reg, err := r.regOrderSev.RegisterByAdmin(&req, 0)
+	if err != nil {
+		ginutils.RenderRespError(c, err)
+		return
+	}
+
+	ginutils.RenderRespOK(c, services.RegisterByAdminResp{
+		reg.CommitHash, reg.TxHash, reg.TxState,
+	})
 }
 
 // @Tags        Registers
@@ -30,7 +48,7 @@ func NewRegisterOrderCtrl() *RegisterOrderCtrl {
 // @Failure     400                         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500                         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /registers/order/{commit_hash} [post]
-func (r *RegisterOrderCtrl) MakeOrder(c *gin.Context) {
+func (r *RegisterCtrl) MakeOrder(c *gin.Context) {
 	var req services.MakeRegisterOrderReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -73,7 +91,7 @@ func (r *RegisterOrderCtrl) MakeOrder(c *gin.Context) {
 // @Failure     400         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /registers/order/{commit_hash} [get]
-func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
+func (r *RegisterCtrl) GetOrder(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -97,7 +115,7 @@ func (r *RegisterOrderCtrl) GetOrder(c *gin.Context) {
 // @Failure     400         {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500         {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /registers/order/refresh-url/{commit_hash} [put]
-func (r *RegisterOrderCtrl) RefreshURL(c *gin.Context) {
+func (r *RegisterCtrl) RefreshURL(c *gin.Context) {
 	commitHash, ok := c.Params.Get("commit_hash")
 	if !ok {
 		ginutils.RenderRespError(c, fmt.Errorf("missing commit_hash"), cns_errors.ERR_INVALID_REQUEST_COMMON)

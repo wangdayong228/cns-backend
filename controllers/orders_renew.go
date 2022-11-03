@@ -11,12 +11,12 @@ import (
 	pservice "github.com/wangdayong228/conflux-pay/services"
 )
 
-type RenewOrderCtrl struct {
+type RenewCtrl struct {
 	regOrderSev *services.RenewOrderService
 }
 
-func NewRenewOrderCtrl() *RenewOrderCtrl {
-	return &RenewOrderCtrl{&services.RenewOrderService{}}
+func NewRenewCtrl() *RenewCtrl {
+	return &RenewCtrl{&services.RenewOrderService{}}
 }
 
 // @Tags        Renews
@@ -30,7 +30,7 @@ func NewRenewOrderCtrl() *RenewOrderCtrl {
 // @Failure     400                      {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500                      {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /renews/order [post]
-func (r *RenewOrderCtrl) MakeOrder(c *gin.Context) {
+func (r *RenewCtrl) MakeOrder(c *gin.Context) {
 	var req services.MakeRenewOrderReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -67,7 +67,7 @@ func (r *RenewOrderCtrl) MakeOrder(c *gin.Context) {
 // @Failure     400 {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500 {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /renews/order/{id} [get]
-func (r *RenewOrderCtrl) GetOrder(c *gin.Context) {
+func (r *RenewCtrl) GetOrder(c *gin.Context) {
 	id, err := getParamId(c)
 	if err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -92,7 +92,7 @@ func (r *RenewOrderCtrl) GetOrder(c *gin.Context) {
 // @Failure     400 {object} cns_errors.CnsErrorDetailInfo "Invalid request"
 // @Failure     500 {object} cns_errors.CnsErrorDetailInfo "Internal Server error"
 // @Router      /renews/order/refresh-url/{id} [put]
-func (r *RenewOrderCtrl) RefreshURL(c *gin.Context) {
+func (r *RenewCtrl) RefreshURL(c *gin.Context) {
 	id, err := getParamId(c)
 	if err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)

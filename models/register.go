@@ -38,13 +38,16 @@ type RegisterCore struct {
 
 type ProcessInfo struct {
 	*pmodels.Order  `gorm:"-"`
-	OrderID         *uint
-	OrderTradeState *penums.TradeState
-	TxID            uint    `json:"-"`
-	TxHash          string  `gorm:"type:varchar(255)" json:"tx_hash"`
-	TxState         TxState `gorm:"type:varchar(255)" json:"tx_state"`
-	UserID          uint
-	UserPermission  enums.UserPermission
+	OrderID         *uint                `json:"-"`
+	OrderTradeState *penums.TradeState   `json:"-"`
+	TxID            uint                 `json:"-"`
+	TxHash          string               `gorm:"type:varchar(255)" json:"tx_hash"`
+	TxState         TxState              `gorm:"type:varchar(255)" json:"tx_state"`
+	UserID          uint                 `json:"-"`
+	UserPermission  enums.UserPermission `json:"-"`
+}
+
+type ProcessStates struct {
 }
 
 func (o *ProcessInfo) IsStable() bool {
@@ -122,7 +125,10 @@ func (*RegisterOrderOperater) FindNeedRegiterOrders(startID uint) ([]*Register, 
 	// o.TradeState = penums.TRADE_STATE_SUCCESSS
 
 	var orders []*Register
-	if err := GetDB().Where("id > ? and tx_id = ?", startID, 0).Where(&o).Find(&orders).Error; err != nil {
+	if err := GetDB().Debug().
+		Where(" tx_id = ? and ( order_trade_state = ? or user_permission > ?)", 0, penums.TRADE_STATE_SUCCESSS, 0).
+		Where(&o).
+		Find(&orders).Error; err != nil {
 		return nil, err
 	}
 
@@ -131,7 +137,7 @@ func (*RegisterOrderOperater) FindNeedRegiterOrders(startID uint) ([]*Register, 
 	}
 
 	// filter trade successs
-	orders = FilterRegisterOrdersByTxState(orders, penums.TRADE_STATE_SUCCESSS)
+	// orders = FilterRegisterOrdersByTxState(orders, penums.TRADE_STATE_SUCCESSS)
 
 	return orders, nil
 }
@@ -199,12 +205,12 @@ func CompleteRegisterOrders(regOrders []*Register) error {
 	return nil
 }
 
-func FilterRegisterOrdersByTxState(regOrders []*Register, tradeState penums.TradeState) []*Register {
-	var result []*Register
-	for _, o := range regOrders {
-		if o.Order != nil && o.Order.TradeState == tradeState {
-			result = append(result, o)
-		}
-	}
-	return result
-}
+// func FilterRegisterOrdersByTxState(regOrders []*Register, tradeState penums.TradeState) []*Register {
+// 	var result []*Register
+// 	for _, o := range regOrders {
+// 		if o.Order != nil && o.Order.TradeState == tradeState {
+// 			result = append(result, o)
+// 		}
+// 	}
+// 	return result
+// }

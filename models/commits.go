@@ -1,6 +1,8 @@
 package models
 
-import "github.com/wangdayong228/cns-backend/models/enums"
+import (
+	"github.com/wangdayong228/cns-backend/models/enums"
+)
 
 type Commit struct {
 	BaseModel
@@ -29,6 +31,7 @@ func FindCommit(commitHash string) (*Commit, error) {
 	c := &Commit{}
 	c.CommitHash = commitHash
 	if err := GetDB().Where(c).First(c).Error; err != nil {
+		// debug.PrintStack()
 		return nil, err
 	}
 	return c, nil
