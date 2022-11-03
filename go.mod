@@ -14,15 +14,19 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
+	github.com/swaggo/swag v1.8.7
 	github.com/ulule/limiter/v3 v3.10.0
-	github.com/wangdayong228/conflux-pay v0.0.0-20221018035346-0f908740100f
-	github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221019033631-faac2a3e64fa
+	github.com/wangdayong228/conflux-pay v0.0.0-20221103042407-fca16358b279
+	github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221103075450-4a8cae7b42ec
 	go.uber.org/ratelimit v0.2.0
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
 )
 
 require (
+	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
@@ -33,6 +37,10 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
+	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/jsonreference v0.19.6 // indirect
+	github.com/go-openapi/spec v0.20.4 // indirect
+	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
@@ -45,10 +53,12 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mcuadros/go-defaults v1.2.0 // indirect
@@ -79,6 +89,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
@@ -87,5 +98,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221019033631-faac2a3e64fa => ../conflux-pay-sdk-go
-replace github.com/wangdayong228/conflux-pay v0.0.0-20221018035346-0f908740100f => ../conflux-pay
+// replace github.com/wangdayong228/conflux-pay-sdk-go v0.0.0-20221019033631-faac2a3e64fa => ../conflux-pay-sdk-go
+// replace github.com/wangdayong228/conflux-pay v0.0.0-20221018035346-0f908740100f => ../conflux-pay
