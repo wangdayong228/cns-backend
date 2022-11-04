@@ -112,6 +112,9 @@ func LoopSyncRegisterState() {
 					continue
 				}
 
+				if o.Order == nil {
+					continue
+				}
 				// refund
 				_, _, err := confluxPayClient.OrdersApi.Refund(context.Background(), o.TradeNo).
 					RefundReq(confluxpay.ServicesRefundReq{Reason: "failed to register cns"}).Execute()

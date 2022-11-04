@@ -49,7 +49,7 @@ type TxSummary struct {
 	TxID    uint    `json:"-"`
 	TxHash  string  `gorm:"type:varchar(255)" json:"tx_hash"`
 	TxState TxState `gorm:"uint" json:"tx_state"`
-	TxError string  `gorm:"type:varchar(255)" json:"tx_error"`
+	TxError string  `gorm:"type:text" json:"tx_error"`
 }
 
 func NewTxSummaryByRaw(tx *Transaction) *TxSummary {

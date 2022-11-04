@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/wangdayong228/cns-backend/cns_errors"
@@ -20,8 +21,8 @@ func Auth() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		apikey := c.GetHeader("X-Api-Key")
-		apikeyHash := crypto.Keccak256([]byte(apikey))
-		u := usersMap[string(apikeyHash)]
+		apikeyHash := common.BytesToHash(crypto.Keccak256([]byte(apikey))).Hex()
+		u := usersMap[apikeyHash]
 		if u == nil {
 			ginutils.RenderRespError(c, cns_errors.ERR_AUTHORIZATION_NO_PERMISSION)
 			c.Abort()

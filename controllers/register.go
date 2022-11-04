@@ -26,12 +26,8 @@ func (r *RegisterCtrl) RegisterByAdmin(c *gin.Context) {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
 	}
-	user, ok := c.Get("user")
-	if !ok {
-		ginutils.RenderRespError(c, cns_errors.ERR_AUTHORIZATION_NO_PERMISSION)
-		return
-	}
 
+	user := c.MustGet("user")
 	reg, err := r.regSev.RegisterByAdmin(&req, user.(*models.User))
 	if err != nil {
 		ginutils.RenderRespError(c, err)

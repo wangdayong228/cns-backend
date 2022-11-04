@@ -27,12 +27,7 @@ func (r *RenewCtrl) RenewByAdmin(c *gin.Context) {
 		return
 	}
 
-	user, ok := c.Get("user")
-	if !ok {
-		ginutils.RenderRespError(c, cns_errors.ERR_AUTHORIZATION_NO_PERMISSION)
-		return
-	}
-
+	user := c.MustGet("user")
 	renew, err := r.renewSev.RenewByAdmin(&req, user.(*models.User))
 	if err != nil {
 		ginutils.RenderRespError(c, err)
