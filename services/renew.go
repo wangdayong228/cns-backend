@@ -9,7 +9,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/wangdayong228/cns-backend/models"
-	"github.com/wangdayong228/cns-backend/models/enums"
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
 	penums "github.com/wangdayong228/conflux-pay/models/enums"
 	pservice "github.com/wangdayong228/conflux-pay/services"
@@ -45,11 +44,11 @@ type RenewService struct {
 
 // 双镜等有注册权限的用户才可以调用
 // make commit
-func (r *RenewService) RenewByAdmin(req *models.RenewOrderArgs, userID uint, userPermission enums.UserPermission) (*models.Renew, error) {
+func (r *RenewService) RenewByAdmin(req *models.RenewOrderArgs, user *models.User) (*models.Renew, error) {
 	renew := models.Renew{}
 	renew.RenewOrderArgs = *req
-	renew.UserID = userID
-	renew.UserPermission = userPermission
+	renew.UserID = user.ID
+	renew.UserPermission = user.Permission
 
 	if err := renew.Save(models.GetDB()); err != nil {
 		return nil, err

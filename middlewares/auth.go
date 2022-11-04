@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/wangdayong228/cns-backend/cns_errors"
 	"github.com/wangdayong228/cns-backend/models"
@@ -14,18 +15,18 @@ func Auth() gin.HandlerFunc {
 	}
 	usersMap := make(map[string]*models.User)
 	for _, u := range users {
-		usersMap[u.ApiKey] = u
+		usersMap[u.ApiKeyHash] = u
 	}
 
 	return func(c *gin.Context) {
 		apikey := c.GetHeader("X-Api-Key")
-		u := usersMap[apikey]
+		apikeyHash := crypto.Keccak256([]byte(apikey))
+		u := usersMap[string(apikeyHash)]
 		if u == nil {
 			ginutils.RenderRespError(c, cns_errors.ERR_AUTHORIZATION_NO_PERMISSION)
 			c.Abort()
 			return
 		}
-		c.Set("user_id", u.ID)
-		c.Set("user_permission", uint(u.Permission))
+		c.Set("user", u)
 	}
 }

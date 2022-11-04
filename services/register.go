@@ -45,7 +45,7 @@ type RegisterService struct {
 
 // 双镜等有注册权限的用户才可以调用
 // make commit
-func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, userID uint, userPermission enums.UserPermission) (*models.Register, error) {
+func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, user *models.User) (*models.Register, error) {
 	commit, err := MakeCommits(req)
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, userID uint, u
 
 	reg := models.Register{}
 	reg.CommitHash = commit.CommitHash
-	reg.UserID = userID
-	reg.UserPermission = userPermission
+	reg.UserID = user.ID
+	reg.UserPermission = user.Permission
 
 	if err = reg.Save(models.GetDB()); err != nil {
 		return nil, err

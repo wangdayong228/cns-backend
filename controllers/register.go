@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/wangdayong228/cns-backend/cns_errors"
 	"github.com/wangdayong228/cns-backend/models"
-	"github.com/wangdayong228/cns-backend/models/enums"
 	"github.com/wangdayong228/cns-backend/services"
 	"github.com/wangdayong228/cns-backend/utils/ginutils"
 	pservice "github.com/wangdayong228/conflux-pay/services"
@@ -27,9 +26,13 @@ func (r *RegisterCtrl) RegisterByAdmin(c *gin.Context) {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
 		return
 	}
-	userID := c.GetUint("user_id")
-	userPermission := c.GetUint("user_permission")
-	reg, err := r.regSev.RegisterByAdmin(&req, userID, enums.UserPermission(userPermission))
+	user, ok := c.Get("user")
+	if !ok {
+		ginutils.RenderRespError(c, cns_errors.ERR_AUTHORIZATION_NO_PERMISSION)
+		return
+	}
+
+	reg, err := r.regSev.RegisterByAdmin(&req, user.(*models.User))
 	if err != nil {
 		ginutils.RenderRespError(c, err)
 		return
