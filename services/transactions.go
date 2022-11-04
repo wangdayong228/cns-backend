@@ -43,7 +43,7 @@ func FindTransactionByID(id uint) (*models.Transaction, error) {
 	return models.FindTransactionByID(id)
 }
 
-func TxService() {
+func LoopSendTx() {
 	logrus.Info("start task for sending transactions")
 	sendInterval := time.Second * 5
 

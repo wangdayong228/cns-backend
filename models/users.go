@@ -6,6 +6,7 @@ import (
 
 type User struct {
 	BaseModel
+	Name       string               `gorm:"type:varchar(255)" json:"name"`
 	ApiKey     string               `gorm:"type:varchar(255)" json:"api_key"`
 	Permission enums.UserPermission `gorm:"uint" json:"permission"`
 }

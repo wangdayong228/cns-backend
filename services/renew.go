@@ -39,13 +39,13 @@ func NewRenewByAdminRespByRaw(reg *models.Renew) *RnewByAdminResp {
 	}
 }
 
-type RenewOrderService struct {
+type RenewService struct {
 	modelOperator models.RenewOrderOperater
 }
 
 // 双镜等有注册权限的用户才可以调用
 // make commit
-func (r *RenewOrderService) RenewByAdmin(req *models.RenewOrderArgs, userID uint, userPermission enums.UserPermission) (*models.Renew, error) {
+func (r *RenewService) RenewByAdmin(req *models.RenewOrderArgs, userID uint, userPermission enums.UserPermission) (*models.Renew, error) {
 	renew := models.Renew{}
 	renew.RenewOrderArgs = *req
 	renew.UserID = userID
@@ -58,7 +58,7 @@ func (r *RenewOrderService) RenewByAdmin(req *models.RenewOrderArgs, userID uint
 	return &renew, nil
 }
 
-func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.Renew, error) {
+func (r *RenewService) MakeOrder(req *MakeRenewOrderReq) (*models.Renew, error) {
 	// 过期时间
 	expireTime := maxCommitmentAge.Int64() + time.Now().Unix()
 
@@ -110,7 +110,7 @@ func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.Renew, er
 	return RenewOrder, nil
 }
 
-func (r *RenewOrderService) GetOrder(id int) (*models.Renew, error) {
+func (r *RenewService) GetOrder(id int) (*models.Renew, error) {
 	o, err := r.modelOperator.FindOrderById(id)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (r *RenewOrderService) GetOrder(id int) (*models.Renew, error) {
 	return o, nil
 }
 
-func (r *RenewOrderService) RefreshURL(id int) (*models.Renew, error) {
+func (r *RenewService) RefreshURL(id int) (*models.Renew, error) {
 	o, err := r.GetOrder(id)
 	if err != nil {
 		return nil, err

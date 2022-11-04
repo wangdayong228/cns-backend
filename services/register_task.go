@@ -17,7 +17,7 @@ var (
 	regOrderOperator     = models.RegisterOrderOperater{}
 )
 
-func LoopSendRegisterTx() {
+func LoopCreateRegisterTx() {
 	from := config.CnsContractVal.Admin
 	to := config.CnsContractVal.Register
 

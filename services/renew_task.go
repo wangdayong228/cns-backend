@@ -38,7 +38,7 @@ var (
 	renewOrderOperator = models.RenewOrderOperater{}
 )
 
-func RenewService() {
+func LoopCreateRenewTx() {
 	// from := config.CnsContractVal.Admin
 	// to := config.CnsContractVal.Register
 
@@ -85,7 +85,7 @@ func RenewService() {
 }
 
 // TODO: implement
-func SyncRenewStateService() {
+func LoopSyncRenewState() {
 	for {
 		time.Sleep(time.Second * 5)
 		// 1. find records has RenewTxID and state is UnCompleted
