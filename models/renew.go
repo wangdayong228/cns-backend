@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type RenewOrder struct {
+type Renew struct {
 	BaseModel
-	RenewOrderCore
+	RenewCore
 }
 
-func (o *RenewOrder) Save(db *gorm.DB) error {
+func (o *Renew) Save(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		if o.Order != nil {
 			err := tx.Save(&o.Order).Error
@@ -25,7 +25,7 @@ func (o *RenewOrder) Save(db *gorm.DB) error {
 	})
 }
 
-type RenewOrderCore struct {
+type RenewCore struct {
 	ProcessInfo
 	RenewOrderArgs
 }
@@ -37,12 +37,12 @@ type RenewOrderArgs struct {
 	WrapperExpiry uint64 `json:"wrapper_expiry" binding:"required"`
 }
 
-func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder, renewArgs *RenewOrderArgs) (*RenewOrder, error) {
+func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder, renewArgs *RenewOrderArgs) (*Renew, error) {
 	o, err := NewOrderWithTxByPayResp(payResp)
 	if err != nil {
 		return nil, err
 	}
-	result := RenewOrder{}
+	result := Renew{}
 	result.ProcessInfo = *o
 	result.RenewOrderArgs = *renewArgs
 	return &result, nil
@@ -51,25 +51,25 @@ func NewRenewOrderByPayResp(payResp *confluxpay.ModelsOrder, renewArgs *RenewOrd
 type RenewOrderOperater struct {
 }
 
-func (*RenewOrderOperater) FindOrderById(id int) (*RenewOrder, error) {
-	o := RenewOrder{}
+func (*RenewOrderOperater) FindOrderById(id int) (*Renew, error) {
+	o := Renew{}
 	if err := GetDB().Where(id).First(&o).Error; err != nil {
 		return nil, err
 	}
 
-	if err := CompleteRenewOrders([]*RenewOrder{&o}); err != nil {
+	if err := CompleteRenewOrders([]*Renew{&o}); err != nil {
 		return nil, err
 	}
 
 	return &o, nil
 }
 
-func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, error) {
-	o := RenewOrder{}
+func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*Renew, error) {
+	o := Renew{}
 	// o.TradeState = penums.TRADE_STATE_SUCCESSS
 	// o.TxID = 0
 
-	var orders []*RenewOrder
+	var orders []*Renew
 	if err := GetDB().
 		Where(" tx_id = ? and ( order_trade_state = ? or user_permission > ?)", 0, penums.TRADE_STATE_SUCCESSS, 0).
 		Where(&o).Find(&orders).Error; err != nil {
@@ -94,8 +94,8 @@ func (*RenewOrderOperater) FindNeedRnewOrders(startID uint) ([]*RenewOrder, erro
 // TX_STATE_PENDING                                        // 2
 // TX_STATE_EXECUTED                                       // 3
 // TX_STATE_CONFIRMED
-func (*RenewOrderOperater) FindNeedSyncStateOrders(count int) ([]*RenewOrder, error) {
-	var orders []*RenewOrder
+func (*RenewOrderOperater) FindNeedSyncStateOrders(count int) ([]*Renew, error) {
+	var orders []*Renew
 	if err := GetDB().
 		Not("tx_id = ?", 0).
 		Where("tx_state = ?", TX_STATE_INIT).
@@ -127,7 +127,7 @@ func (r *RenewOrderOperater) UpdateOrderState(id int, raw *confluxpay.ModelsOrde
 }
 
 // TODO: 用泛型代替
-func CompleteRenewOrders(regOrders []*RenewOrder) error {
+func CompleteRenewOrders(regOrders []*Renew) error {
 	// find orders
 	var ids []uint
 	for _, o := range regOrders {

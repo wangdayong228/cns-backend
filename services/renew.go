@@ -2,132 +2,154 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
+	"net/http"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/wangdayong228/cns-backend/config"
 	"github.com/wangdayong228/cns-backend/models"
 	"github.com/wangdayong228/cns-backend/models/enums"
 	confluxpay "github.com/wangdayong228/conflux-pay-sdk-go"
-	"gorm.io/gorm"
+	penums "github.com/wangdayong228/conflux-pay/models/enums"
+	pservice "github.com/wangdayong228/conflux-pay/services"
 )
 
-// create renew task which will create a tx, return task
-func MakeRenewOrder(req *MakeRenewOrderReq) (*models.RenewOrder, error) {
-	return nil, nil
+type MakeRenewOrderReq struct {
+	TradeProvider string           `json:"trade_provider" swaggertype:"string"`
+	TradeType     penums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
+	Description   *string          `json:"description" binding:"required"`
+	models.RenewOrderArgs
 }
 
-// create renew tx
-func createRenewTx(name string, duration *big.Int, fuses uint32, wrapperExpiry uint64) (*models.Transaction, error) {
-	data, err := dataGen.RenewWithFiat(name, duration, fuses, wrapperExpiry)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"chainID": config.RpcVal.ChainID,
-			"data":    data,
-		}).WithError(err).Error("failed gen Renew data")
+type MakeRenewOrderResp struct {
+	ID uint `json:"id"`
+	pservice.MakeOrderResp
+}
+
+type RnewByAdminResp struct {
+	ID uint `json:"id"`
+	models.RenewOrderArgs
+	models.TxSummary
+}
+
+func NewRenewByAdminRespByRaw(reg *models.Renew) *RnewByAdminResp {
+	return &RnewByAdminResp{
+		reg.ID, reg.RenewOrderArgs, reg.TxSummary,
+	}
+}
+
+type RenewOrderService struct {
+	modelOperator models.RenewOrderOperater
+}
+
+// 双镜等有注册权限的用户才可以调用
+// make commit
+func (r *RenewOrderService) RenewByAdmin(req *models.RenewOrderArgs, userID uint, userPermission enums.UserPermission) (*models.Renew, error) {
+	renew := models.Renew{}
+	renew.RenewOrderArgs = *req
+	renew.UserID = userID
+	renew.UserPermission = userPermission
+
+	if err := renew.Save(models.GetDB()); err != nil {
 		return nil, err
 	}
-	return CreateTransaction(enums.CHAIN_TYPE_CFX, enums.ChainID(config.RpcVal.ChainID),
-		config.CnsContractVal.Admin.String(), config.CnsContractVal.Register.String(),
-		big.NewInt(0), data)
+
+	return &renew, nil
 }
 
-var (
-	lastRenewdOrderId  uint
-	renewOrderOperator = models.RenewOrderOperater{}
-)
+func (r *RenewOrderService) MakeOrder(req *MakeRenewOrderReq) (*models.Renew, error) {
+	// 过期时间
+	expireTime := maxCommitmentAge.Int64() + time.Now().Unix()
 
-func RenewService() {
-	// from := config.CnsContractVal.Admin
-	// to := config.CnsContractVal.Register
-
-	for {
-		// 1. find need Renew orders
-		needs, _ := renewOrderOperator.FindNeedRnewOrders(lastRenewdOrderId)
-		if len(needs) == 0 {
-			time.Sleep(time.Second * 5)
-			continue
-		}
-		logrus.WithField("needs", needs).Info("find need Renew orders")
-
-		// 2. create txs for them
-		for _, item := range needs {
-			logrus.WithField("order", item).Error("creat Renew tx for order")
-			// commit, err := renewOrderOperator.FindOrderById(item.CommitHash)
-			// if err != nil {
-			// 	logrus.WithField("commit hash", item.CommitHash).WithError(err).Error("failed find commit")
-			// 	continue
-			// }
-
-			// commitArgs, err := newCommitArgsForContract(&commit.CommitArgs)
-			// if err != nil {
-			// 	logrus.WithField("commit args", commit.CommitArgs).WithError(err).Error("failed convert commit args")
-			// 	continue
-			// }
-
-			// data, err := dataGen.Renew(commitArgs)
-			// if err != nil {
-			// 	logrus.WithField("args", commit.CommitArgs).WithError(err).Error("failed gen Renew data")
-			// 	continue
-			// }
-
-			tx, err := createRenewTx(item.CnsName, big.NewInt(int64(item.Duration)), item.Fuses, item.WrapperExpiry)
-			if err != nil {
-				continue
-			}
-			item.TxID = tx.ID
-			models.GetDB().Save(item)
-			lastRenewdOrderId = item.ID
-		}
-		time.Sleep(time.Second * 5)
+	// 获取价格
+	price, err := web3RegController.RentPriceInFiat(nil, req.CnsName, big.NewInt(int64(req.Duration)))
+	if err != nil {
+		return nil, err
 	}
-}
+	amount := new(big.Int).Add(price.Base, price.Premium)
+	amount = amount.Div(amount, big.NewInt(1e6))
+	fmt.Println("price", amount)
+	if amount.Cmp(big.NewInt(1)) <= 0 {
+		amount = big.NewInt(1)
+	}
 
-// TODO: implement
-func SyncRenewStateService() {
-	for {
-		time.Sleep(time.Second * 5)
-		// 1. find records has RenewTxID and state is UnCompleted
-		orders, err := renewOrderOperator.FindNeedSyncStateOrders(500)
+	// 2. call payservice.makeorder and save order
+	provider, ok := penums.ParseTradeProviderByName(req.TradeProvider)
+	if !ok {
+		return nil, fmt.Errorf("invalid provider: %v", req.TradeProvider)
+	}
+
+	var payOrder *confluxpay.ModelsOrder
+
+	switch *provider {
+	case penums.TRADE_PROVIDER_WECHAT:
+		wecahtOrdReq := *confluxpay.NewServicesMakeOrderReq(int32(amount.Int64()), *req.Description, int32(expireTime), req.TradeType.String())
+
+		var resp *http.Response
+		payOrder, resp, err = confluxPayClient.OrdersApi.MakeOrder(context.Background()).MakeOrdReq(wecahtOrdReq).Execute()
 		if err != nil {
-			if err != gorm.ErrRecordNotFound {
-				logrus.WithError(err).Error("failed find orders need by sync")
-			}
-			continue
+			logrus.WithError(err).WithField("order request", wecahtOrdReq).Info("failed to make order throught conflux-pay")
+			return nil, err
 		}
+		fmt.Printf("make order resp %v\n", resp)
 
-		if len(orders) == 0 {
-			continue
-		}
-
-		logrus.WithField("orders", orders).Info("find orders need sync reigster state")
-
-		// 2. sync them
-		for _, o := range orders {
-			tx, err := models.FindTransactionByID(o.TxID)
-			if err != nil {
-				logrus.WithField("tx_id", o.TxID).WithError(err).Error("failed find tx by id")
-				continue
-			}
-			if tx.IsFinalized() {
-				o.TxHash = tx.Hash
-				o.TxState = models.TxState(tx.State)
-
-				if err = models.GetDB().Save(o).Error; err != nil {
-					logrus.WithField("order", o).WithError(err).Error("failed save order")
-					continue
-				}
-
-				if o.TxState.IsSuccess() {
-					continue
-				}
-
-				// refund
-				_, _, err := confluxPayClient.OrdersApi.Refund(context.Background(), o.TradeNo).
-					RefundReq(confluxpay.ServicesRefundReq{Reason: "failed to Renew cns"}).Execute()
-				logrus.WithField("order", o).WithError(err).Error("refund order")
-			}
-		}
+	default:
+		return nil, fmt.Errorf("unspport")
 	}
+
+	RenewOrder, err := models.NewRenewOrderByPayResp(payOrder, &req.RenewOrderArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := RenewOrder.Save(models.GetDB()); err != nil {
+		return nil, err
+	}
+
+	return RenewOrder, nil
+}
+
+func (r *RenewOrderService) GetOrder(id int) (*models.Renew, error) {
+	o, err := r.modelOperator.FindOrderById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if o.IsStable() {
+		return o, nil
+	}
+
+	resp, _, err := confluxPayClient.OrdersApi.QueryOrderSummary(context.Background(), o.TradeNo).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	r.modelOperator.UpdateOrderState(id, resp)
+	return o, nil
+}
+
+func (r *RenewOrderService) RefreshURL(id int) (*models.Renew, error) {
+	o, err := r.GetOrder(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if o.IsStable() {
+		return nil, ErrOrderCompleted
+	}
+
+	resp, _, err := confluxPayClient.OrdersApi.RefreshPayUrl(context.Background(), o.TradeNo).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	o.CodeUrl = resp.CodeUrl
+	o.H5Url = resp.H5Url
+
+	if err := o.Save(models.GetDB()); err != nil {
+		return nil, err
+	}
+
+	return o, nil
 }

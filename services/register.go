@@ -29,9 +29,14 @@ type MakeRegisterOrderResp struct {
 }
 
 type RegisterByAdminResp struct {
-	CommitHash string         `json:"commit_hash"`
-	TxHash     string         `json:"tx_hash"`
-	TxState    models.TxState `json:"tx_state"`
+	CommitHash string `json:"commit_hash"`
+	models.TxSummary
+}
+
+func NewRegisterByAdminRespByRaw(reg *models.Register) *RegisterByAdminResp {
+	return &RegisterByAdminResp{
+		reg.CommitHash, reg.TxSummary,
+	}
 }
 
 type RegisterService struct {
@@ -40,7 +45,7 @@ type RegisterService struct {
 
 // 双镜等有注册权限的用户才可以调用
 // make commit
-func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, userID uint) (*models.Register, error) {
+func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, userID uint, userPermission enums.UserPermission) (*models.Register, error) {
 	commit, err := MakeCommits(req)
 	if err != nil {
 		return nil, err
@@ -49,13 +54,8 @@ func (r *RegisterService) RegisterByAdmin(req *models.CommitCore, userID uint) (
 	reg := models.Register{}
 	reg.CommitHash = commit.CommitHash
 	reg.UserID = userID
+	reg.UserPermission = userPermission
 
-	user := models.User{}
-	if err = models.GetDB().Where(userID).Find(&user).Error; err != nil {
-		return nil, err
-	}
-
-	reg.UserPermission = user.Permission
 	if err = reg.Save(models.GetDB()); err != nil {
 		return nil, err
 	}

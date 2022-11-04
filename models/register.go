@@ -37,21 +37,32 @@ type RegisterCore struct {
 }
 
 type ProcessInfo struct {
+	TxSummary
 	*pmodels.Order  `gorm:"-"`
 	OrderID         *uint                `json:"-"`
 	OrderTradeState *penums.TradeState   `json:"-"`
-	TxID            uint                 `json:"-"`
-	TxHash          string               `gorm:"type:varchar(255)" json:"tx_hash"`
-	TxState         TxState              `gorm:"type:varchar(255)" json:"tx_state"`
 	UserID          uint                 `json:"-"`
 	UserPermission  enums.UserPermission `json:"-"`
 }
 
-type ProcessStates struct {
+type TxSummary struct {
+	TxID    uint    `json:"-"`
+	TxHash  string  `gorm:"type:varchar(255)" json:"tx_hash"`
+	TxState TxState `gorm:"uint" json:"tx_state"`
+	TxError string  `gorm:"type:varchar(255)" json:"tx_error"`
+}
+
+func NewTxSummaryByRaw(tx *Transaction) *TxSummary {
+	return &TxSummary{
+		TxID:    tx.ID,
+		TxHash:  tx.Hash,
+		TxState: TxState(tx.State),
+		TxError: tx.Error,
+	}
 }
 
 func (o *ProcessInfo) IsStable() bool {
-	if o == nil {
+	if o == nil || o.Order == nil {
 		return true
 	}
 	if o.OrderCore.IsStable() {

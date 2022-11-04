@@ -101,8 +101,7 @@ func LoopSyncRegisterState() {
 				continue
 			}
 			if tx.IsFinalized() {
-				o.TxHash = tx.Hash
-				o.TxState = models.TxState(tx.State)
+				o.TxSummary = *models.NewTxSummaryByRaw(tx)
 
 				if err = o.Save(models.GetDB()); err != nil {
 					logrus.WithField("order", o).WithError(err).Error("failed save order")
